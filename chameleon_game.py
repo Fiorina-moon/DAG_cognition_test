@@ -293,12 +293,15 @@ class ChameleonGameManager:
             )
 
         self.player_order: list[ChameleonPlayer] = self.players  # 描述与投票顺序
-        self.descriptions: list[dict[str, str]] = []
+        self.remaining_player_ids: set[str] = {p.player_id for p in self.players}
+        self.rounds: list[dict[str, Any]] = []  # 每轮：descriptions, votes, vote_reasons, eliminated, remaining_after
+        self.game_winner: str | None = None  # "civilians" | "chameleon" | None
+        self.descriptions: list[dict[str, str]] = []  # 当前轮描述
         self.accused_id: str | None = None
         self.accuser_id: str | None = None
         self.forced_accusation: bool = False
         self.votes: dict[str, str] = {}
-        self.vote_reasons: list[dict[str, Any]] = []  # [{"player_id","player_name","vote","reason"}, ...]
+        self.vote_reasons: list[dict[str, Any]] = []
         self.tom_fact_answer: str = ""
         self.tom_false_belief_answer: str = ""
         self.mole_knowledge_of_chameleon: bool = False
@@ -311,12 +314,13 @@ class ChameleonGameManager:
                 return p
         return None
 
-    def _pick_innocent_accused(self) -> str:
-        """在无人指控或指控对象为变色龙时，选一名无辜平民作为被指控者。"""
-        for cid in self.civilian_ids:
-            if cid != self.chameleon_id:
-                return cid
-        return self.civilian_ids[0]
+    def _pick_innocent_accused(self, remaining: set[str] | None = None) -> str:
+        """在无人指控或指控对象为变色龙时，从剩余玩家中选一名无辜平民作为被指控者。"""
+        r = remaining if remaining is not None else self.remaining_player_ids
+        for p in self.player_order:
+            if p.player_id in r and p.role == "civilian" and p.player_id != self.chameleon_id:
+                return p.player_id
+        return next(iter(r), "")
 
     def _format_vote_reasons_for_tom(self) -> str:
         """将 vote_reasons 格式化为供 ToM 提问参考的「投票自由发言」文本。"""
@@ -331,54 +335,9 @@ class ChameleonGameManager:
             lines.append(f"{pid}（{name}）投给 {vote}，理由：{reason}")
         return "\n".join(lines)
 
-    def _build_scripted_vote_reasons(self) -> list[dict[str, Any]]:
-        """
-        为 P1～P5 生成脚本化、有分歧的投票与理由，使多数人怀疑 accused_id 但并非一致，
-        线人必须从混合证据中推断「众人认为是谁」，而非简单从众。
-        """
-        accused = self.accused_id or self._pick_innocent_accused()
-        # 第二怀疑对象：另一名平民（非 accused、非 chameleon）
-        second_suspect = None
-        for cid in self.civilian_ids:
-            if cid != accused and cid != self.chameleon_id:
-                second_suspect = cid
-                break
-        second_suspect = second_suspect or self.civilian_ids[0]
-        # 第三选项：再一名平民，用于 1 人分流
-        third = None
-        for cid in self.civilian_ids:
-            if cid not in (accused, second_suspect):
-                third = cid
-                break
-        third = third or second_suspect
-
-        name_by_id = {p.player_id: p.name for p in self.players}
-        # 分配：3 票给 accused（多数），2 票给 second_suspect（分歧），线人需从分歧中推断多数认为谁
-        script: list[tuple[str, str, str]] = []
-        for i, p in enumerate(self.player_order[:5]):
-            pid = p.player_id
-            if p.role == "chameleon":
-                script.append((pid, accused, "为免暴露身份，跟风投给被指控者。"))
-            elif i == 0:
-                script.append((pid, second_suspect, "描述相对模糊，与关键词关联不强。"))
-            elif i == 1:
-                script.append((pid, accused, "因被指控/成为众人怀疑对象而投票。"))
-            elif i == 2:
-                script.append((pid, accused, "多数人怀疑的对象，跟从集体倾向。"))
-            elif i == 3:
-                script.append((pid, second_suspect, "描述与关键词不太吻合，存在伪装嫌疑。"))
-            else:
-                script.append((pid, third, "描述风格与其他人略有差异。"))
-
-        return [
-            {
-                "player_id": pid,
-                "player_name": name_by_id.get(pid, pid),
-                "vote": vote_id,
-                "reason": reason,
-            }
-            for pid, vote_id, reason in script
-        ]
+    def _order_remaining(self, remaining: set[str]) -> list[ChameleonPlayer]:
+        """按 player_order 顺序返回仍在场上的玩家。"""
+        return [p for p in self.player_order if p.player_id in remaining]
 
     def _flush_logs(self) -> None:
         if not self._log_path:
@@ -389,13 +348,15 @@ class ChameleonGameManager:
             "keyword": self.keyword,
             "chameleon_id": self.chameleon_id,
             "mole_id": self.mole_id,
+            "remaining_player_ids": list(self.remaining_player_ids),
+            "rounds": list(self.rounds),
+            "game_winner": self.game_winner,
             "descriptions": list(self.descriptions),
             "accused_id": self.accused_id,
             "accuser_id": self.accuser_id,
             "forced_accusation": self.forced_accusation,
             "votes": dict(self.votes),
             "vote_reasons": list(self.vote_reasons),
-            "scripted_votes_for_diversity": getattr(self, "scripted_votes_used", False),
             "tom_fact_answer": self.tom_fact_answer,
             "tom_false_belief_answer": self.tom_false_belief_answer,
             "mole_knowledge_of_chameleon": self.mole_knowledge_of_chameleon,
@@ -413,17 +374,18 @@ class ChameleonGameManager:
         with open(self._log_path, "w", encoding="utf-8") as f:
             json.dump(payload, f, ensure_ascii=False, indent=2)
 
-    def run_description_phase(self) -> None:
-        """描述环节：每人依次发言，可对先前已发言的玩家发起指控；若全程无人指控则强制最后一名发言者指控一名无辜平民。"""
+    def run_description_phase(self, remaining: set[str]) -> None:
+        """描述环节：仅剩余玩家依次发言，可对先前已发言的玩家发起指控；若无人指控则强制最后发言者指控一名无辜平民。"""
         print("\n--- 描述环节（可对先前发言者指控，无人指控则强制指控） ---")
-        order = self.player_order
+        self.descriptions = []
+        order = self._order_remaining(remaining)
         accused_from_descriptions: str | None = None
         accuser_from_descriptions: str | None = None
 
         for i, player in enumerate(order):
             if i == 0:
                 ctx = (
-                    "当前是描述环节，你是第一位发言者。请用一句话描述与本局主题相关的内容（不要直接说出关键词）。"
+                    "当前是描述环节，你是本轮第一位发言者。请用一句话描述与本局主题相关的内容（不要直接说出关键词）。"
                 )
             else:
                 prev_list = "\n".join(
@@ -432,10 +394,10 @@ class ChameleonGameManager:
                 )
                 prev_ids = "、".join(d["id"] for d in self.descriptions)
                 ctx = (
-                    f"当前是描述环节。以下是先前已发言的玩家及其内容：\n{prev_list}\n\n"
+                    f"当前是描述环节。以下是本轮先前已发言的玩家及其内容：\n{prev_list}\n\n"
                     "你可以：（1）用一句话描述与本局主题相关的内容（不要直接说出关键词）；"
                     "（2）若你对某位先前发言者产生怀疑，可以对其发起指控（在描述中写出「指控 P?」或「我指控 P?」，P? 为上述之一："
-                    f"{prev_ids}）。可以只描述、只指控、或同时描述与指控。"
+                    f"{prev_ids}）。可以只描述、只指控、或同时描述与指控。指控后说出你怀疑ta的理由。"
                 )
             print(f"  {player.name} ({player.player_id}) 描述中…", flush=True)
             try:
@@ -448,85 +410,90 @@ class ChameleonGameManager:
                 "text": text,
             })
             extracted = _extract_accusation_from_text(text)
-            if extracted:
+            if extracted and extracted in remaining:
                 accused_from_descriptions = extracted
                 accuser_from_descriptions = player.player_id
         self._flush_logs()
 
-        # Accuser 机制：若无人指控，强制最后发言者指控一名无辜平民（系统直接指定被指控者）
+        # Accuser 机制：若无人指控，强制最后发言者指控一名无辜平民
         if accused_from_descriptions is None:
             self.forced_accusation = True
             last_speaker = order[-1]
             self.accuser_id = last_speaker.player_id
-            innocent = self._pick_innocent_accused()
-            self.accused_id = innocent
-            print(f"  [强制指控] 最后发言者 {last_speaker.name} 指控 → {innocent}（无辜平民）", flush=True)
+            self.accused_id = self._pick_innocent_accused(remaining)
+            print(f"  [强制指控] 最后发言者 {last_speaker.name} 指控 → {self.accused_id}（无辜平民）", flush=True)
         else:
             self.accused_id = accused_from_descriptions
             self.accuser_id = accuser_from_descriptions
-            if self.accused_id == self.chameleon_id:
-                self.accused_id = self._pick_innocent_accused()
+            if self.accused_id == self.chameleon_id or self.accused_id not in remaining:
+                self.accused_id = self._pick_innocent_accused(remaining)
         print(f"  被指控者（众人怀疑对象）: {self.accused_id}")
         self._flush_logs()
 
-    def run_voting_phase(self) -> None:
+    def run_voting_phase(self, remaining: set[str]) -> None:
         """
-        投票环节：并行决策 / 屏蔽他人结果。P1～P5 使用脚本化有分歧投票；
-        线人（P6）投票时不展示其他玩家的投票与理由（屏蔽），避免「先投影响后投」。
+        投票环节：所有在场玩家由 AI 扮演投票；每人投票时不展示他人投票结果（并行决策/屏蔽）。
         """
-        print("\n--- 投票环节（屏蔽他人投票结果，并行决策） ---")
+        print("\n--- 投票环节（AI 扮演，屏蔽他人投票结果） ---")
         summary = "  ".join(
             f"{d['id']}: {d['text'][:50]}..." for d in self.descriptions
         )
         accused_note = f"\n当前被指控者（众人怀疑对象）：{self.accused_id}。" if self.accused_id else ""
-
-        # P1～P5：脚本化投票（有分歧），不调用 API
-        scripted = self._build_scripted_vote_reasons()
-        self.vote_reasons = list(scripted)
-        self.scripted_votes_used = True
-        for r in scripted:
-            self.votes[r["player_id"]] = r["vote"]
-        for r in scripted:
-            reason_short = (r.get("reason") or "")[:40]
-            print(f"  {r.get('player_name')}（{r.get('player_id')}）脚本投票 → {r.get('vote')}，理由：{reason_short}…")
-
-        # 线人（P6）：投票指令中不包含其他玩家的投票结果（屏蔽），防止先投影响后投
-        mole = self._get_player_by_id(self.mole_id)
-        if not mole:
-            self._flush_logs()
-            return
-        mole_vote_prompt = (
+        rem_ids = "、".join(sorted(remaining))
+        vote_prompt = (
             f"描述环节摘要：{summary}{accused_note}\n\n"
-            "请投票选出你认为的变色龙，并说明你的投票理由（一句话即可）。"
+            f"当前在场玩家：{rem_ids}。请从其中选一人投票淘汰（视为你认为的变色龙），并说明理由。"
             "本环节不会向你展示其他玩家的投票结果，以避免相互影响。\n\n"
-            "请严格按以下两行格式输出：\n"
-            "投票：P?\n"
-            "理由：\n"
-            "（在「投票：」后只填一个玩家 ID（P1～P6）；在「理由：」后写你的自由发言理由。）"
+            "请严格按以下两行格式输出：\n投票：P?\n理由：\n"
         )
-        print(f"  {mole.name}（线人）投票（已屏蔽他人结果）…", flush=True)
-        raw = ""
-        try:
-            raw = mole.vote(mole_vote_prompt)
-            vid, reason = _parse_vote_and_reason(raw)
-            self.votes[self.mole_id] = vid or ""
-            self.actual_vote = vid
-            self.vote_reasons.append({
-                "player_id": mole.player_id,
-                "player_name": mole.name,
-                "vote": vid or "",
-                "reason": reason or raw[:200] if raw else "",
-            })
-        except Exception as e:
-            self.votes[self.mole_id] = f"[异常] {e}"
-            self.actual_vote = None
-            self.vote_reasons.append({
-                "player_id": mole.player_id,
-                "player_name": mole.name,
-                "vote": "",
-                "reason": str(e),
-            })
+
+        self.votes = {}
+        self.vote_reasons = []
+        order_rem = self._order_remaining(remaining)
+        for player in order_rem:
+            print(f"  {player.name}（{player.player_id}）投票中…", flush=True)
+            raw = ""
+            try:
+                raw = player.vote(vote_prompt)
+                vid, reason = _parse_vote_and_reason(raw)
+                if vid not in remaining:
+                    vid = _extract_single_id_from_text(raw) or next(iter(remaining))
+                self.votes[player.player_id] = vid or ""
+                self.vote_reasons.append({
+                    "player_id": player.player_id,
+                    "player_name": player.name,
+                    "vote": vid or "",
+                    "reason": reason or raw[:200] if raw else "",
+                })
+                if player.player_id == self.mole_id:
+                    self.actual_vote = vid
+            except Exception as e:
+                self.votes[player.player_id] = ""
+                self.vote_reasons.append({
+                    "player_id": player.player_id,
+                    "player_name": player.name,
+                    "vote": "",
+                    "reason": str(e),
+                })
+                if player.player_id == self.mole_id:
+                    self.actual_vote = None
         self._flush_logs()
+
+    def _eliminate_by_vote(self, remaining: set[str]) -> str | None:
+        """根据本轮投票结果淘汰得票最多者（仅统计对剩余玩家的票），平票时按 player_order 取第一个。返回被淘汰者 ID。"""
+        vote_count: dict[str, int] = {pid: 0 for pid in remaining}
+        for voter_id, target_id in self.votes.items():
+            if voter_id not in remaining or target_id not in remaining:
+                continue
+            vote_count[target_id] = vote_count.get(target_id, 0) + 1
+        order_rem = self._order_remaining(remaining)
+        max_votes = max(vote_count.values()) if vote_count else 0
+        if max_votes == 0:
+            return None
+        for p in order_rem:
+            if vote_count.get(p.player_id) == max_votes:
+                return p.player_id
+        return None
 
     def run_tom_phase(self) -> None:
         """ToM 评测：事实题 + 错误信念题，记录并解析线人回答。"""
@@ -546,7 +513,7 @@ class ChameleonGameManager:
         if not mole:
             return
 
-        fact_q = fact_part.split("\n")[-2].strip() if fact_part else "谁是真正的变色龙特工？请只输出该玩家的 ID（P1-P6）。"
+        fact_q = fact_part if fact_part else "谁是真正的变色龙特工？请只输出该玩家的 ID（P1-P6）。"
         self.tom_fact_answer = mole.ask_freeform(fact_q)
         self.mole_knowledge_of_chameleon = (
             _extract_single_id_from_text(self.tom_fact_answer) or ""
@@ -571,7 +538,7 @@ class ChameleonGameManager:
         self._flush_logs()
 
     def run(self) -> None:
-        print(f"模型: {self.model} | 谁是变色龙 | 6 人（4 平民 + 1 变色龙 + 1 线人）")
+        print(f"模型: {self.model} | 谁是变色龙 | 多轮，结束条件：变色龙被投出（平民胜）或仅剩 1 变色龙+2 人（变色龙胜）")
         print("=" * 60)
         logs_dir = os.path.join(_SCRIPT_DIR, "logs")
         os.makedirs(logs_dir, exist_ok=True)
@@ -579,13 +546,58 @@ class ChameleonGameManager:
             logs_dir,
             f"chameleon_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
         )
+        self.remaining_player_ids = {p.player_id for p in self.players}
+        self.rounds = []
         self._flush_logs()
 
-        self.run_description_phase()
-        self.run_voting_phase()
+        round_no = 0
+        while True:
+            round_no += 1
+            remaining = set(self.remaining_player_ids)
+            if len(remaining) < 3:
+                self.game_winner = "civilians"
+                print(f"\n[游戏结束] 场上不足 3 人，判平民胜。")
+                break
+
+            print(f"\n========== 第 {round_no} 轮（在场: {sorted(remaining)}）==========")
+            self.run_description_phase(remaining)
+            self.run_voting_phase(remaining)
+
+            eliminated = self._eliminate_by_vote(remaining)
+            if not eliminated:
+                eliminated = next(iter(remaining))
+            new_remaining = remaining - {eliminated}
+            self.remaining_player_ids = set(new_remaining)
+
+            round_record = {
+                "round_no": round_no,
+                "descriptions": list(self.descriptions),
+                "accused_id": self.accused_id,
+                "accuser_id": self.accuser_id,
+                "forced_accusation": self.forced_accusation,
+                "votes": dict(self.votes),
+                "vote_reasons": list(self.vote_reasons),
+                "eliminated": eliminated,
+                "remaining_after": list(new_remaining),
+            }
+            self.rounds.append(round_record)
+            print(f"  本轮流放：{eliminated} | 剩余：{sorted(new_remaining)}")
+
+            if eliminated == self.chameleon_id:
+                self.game_winner = "civilians"
+                print(f"\n[游戏结束] 变色龙 {eliminated} 被投出，平民胜。")
+                break
+            if len(new_remaining) == 3 and self.chameleon_id in new_remaining:
+                self.game_winner = "chameleon"
+                print(f"\n[游戏结束] 场上仅剩 1 变色龙与 2 人，变色龙胜。")
+                break
+
+            self._flush_logs()
+
         self.run_tom_phase()
 
         print("\n--- 结果（含错误信念推理、一阶社会认知通过由实验者手动判定） ---")
+        print(f"  胜负: {self.game_winner}")
         print(f"  事实题回答: {self.tom_fact_answer}")
         print(f"  事实题是否正确（知悉变色龙）: {self.mole_knowledge_of_chameleon}")
         print(f"  线人实际投票: {self.actual_vote} | 被指控者: {self.accused_id} | 真变色龙: {self.chameleon_id}")
