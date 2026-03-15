@@ -542,10 +542,10 @@ class ChameleonGameManager:
         print("=" * 60)
         logs_dir = os.path.join(_SCRIPT_DIR, "logs")
         os.makedirs(logs_dir, exist_ok=True)
-        self._log_path = os.path.join(
-            logs_dir,
-            f"chameleon_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-        )
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        suffix = os.getenv("GAME_LOG_SUFFIX", "").strip()
+        name = f"chameleon_{ts}_{suffix}.json" if suffix else f"chameleon_{ts}.json"
+        self._log_path = os.path.join(logs_dir, name)
         self.remaining_player_ids = {p.player_id for p in self.players}
         self.rounds = []
         self._flush_logs()
@@ -600,7 +600,7 @@ class ChameleonGameManager:
         print(f"  胜负: {self.game_winner}")
         print(f"  事实题回答: {self.tom_fact_answer}")
         print(f"  事实题是否正确（知悉变色龙）: {self.mole_knowledge_of_chameleon}")
-        print(f"  线人实际投票: {self.actual_vote} | 被指控者: {self.accused_id} | 真变色龙: {self.chameleon_id}")
+        print(f"  线人实际投票: {self.actual_vote} | 真变色龙: {self.chameleon_id}")
         print(f"  错误信念题回答: {self.tom_false_belief_answer}")
         if self._log_path:
             self._flush_logs()

@@ -40,10 +40,16 @@ GAMES = [
 ]
 
 
+def _log_suffix(model: str, game_key: str) -> str:
+    """用于日志文件名后缀，保证并行时同一秒内不覆盖。模型名中的空格/斜杠等替换为安全字符。"""
+    safe = model.replace(" ", "_").replace("/", "-").replace("\\", "-").strip()
+    return f"{safe}_{game_key}"
+
+
 def run_one(model: str, game_key: str, script_name: str, game_label: str) -> tuple[str, str, str, bool, str]:
     """
     在子进程中运行一次（某模型 + 某游戏）。
-    子进程继承当前环境并设置 PARATERA_MODEL，paratera_common.get_model_for_game() 会用到该值。
+    子进程继承当前环境并设置 PARATERA_MODEL；设置 GAME_LOG_SUFFIX 使并行时各任务写不同日志文件。
     返回 (model, game_key, game_label, success, message)。
     """
     script_path = os.path.join(_SCRIPT_DIR, script_name)
@@ -51,6 +57,7 @@ def run_one(model: str, game_key: str, script_name: str, game_label: str) -> tup
         return (model, game_key, game_label, False, f"脚本不存在: {script_path}")
     env = os.environ.copy()
     env["PARATERA_MODEL"] = model
+    env["GAME_LOG_SUFFIX"] = _log_suffix(model, game_key)
     try:
         result = subprocess.run(
             [sys.executable, script_path],
@@ -98,30 +105,45 @@ def main() -> None:
     print(f"模型（.env PARATERA_MODEL_LIST 前 4 个）：{models}")
     print(f"游戏：猜数字、拍卖、谁是卧底")
     print(f"共 {len(tasks)} 个任务，并行数 {args.jobs}")
+    print("提示：Ctrl+C 可中断并停止所有任务")
     print("=" * 60)
 
     done = 0
     failed = []
-    with ThreadPoolExecutor(max_workers=args.jobs) as executor:
-        futures = {
-            executor.submit(run_one, model, gk, sn, gl): (model, gk, gl)
-            for model, gk, sn, gl in tasks
-        }
-        for fut in as_completed(futures):
-            model, game_key, game_label = futures[fut]
+    try:
+        with ThreadPoolExecutor(max_workers=args.jobs) as executor:
+            futures = {
+                executor.submit(run_one, model, gk, sn, gl): (model, gk, gl)
+                for model, gk, sn, gl in tasks
+            }
             try:
-                _, _, label, success, msg = fut.result()
-                done += 1
-                status = "OK" if success else "FAIL"
-                print(f"[{done}/{len(tasks)}] {model} | {label} | {status}")
-                if not success and msg:
-                    print(f"    {msg[:300]}{'…' if len(msg) > 300 else ''}")
-                if not success:
-                    failed.append((model, label))
-            except Exception as e:
-                done += 1
-                print(f"[{done}/{len(tasks)}] {model} | {game_label} | EXCEPTION: {e}")
-                failed.append((model, game_label))
+                for fut in as_completed(futures):
+                    model, game_key, game_label = futures[fut]
+                    try:
+                        _, _, label, success, msg = fut.result()
+                        done += 1
+                        status = "OK" if success else "FAIL"
+                        print(f"[{done}/{len(tasks)}] {model} | {label} | {status}")
+                        if not success and msg:
+                            print(f"    {msg[:300]}{'…' if len(msg) > 300 else ''}")
+                        if not success:
+                            failed.append((model, label))
+                    except Exception as e:
+                        done += 1
+                        print(f"[{done}/{len(tasks)}] {model} | {game_label} | EXCEPTION: {e}")
+                        failed.append((model, game_label))
+            except KeyboardInterrupt:
+                print("\n收到 Ctrl+C，正在取消未开始的任务并退出…")
+                for f in futures:
+                    f.cancel()
+                try:
+                    executor.shutdown(wait=False, cancel_futures=True)
+                except TypeError:
+                    executor.shutdown(wait=False)
+                raise
+    except KeyboardInterrupt:
+        print("已中断。正在运行中的子进程会随主进程一起结束（同一终端下 Ctrl+C 会发给整组进程）。")
+        sys.exit(130)
 
     print("=" * 60)
     if failed:

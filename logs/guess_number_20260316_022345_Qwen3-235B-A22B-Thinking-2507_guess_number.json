@@ -1,0 +1,28 @@
+{
+  "model": "Qwen3-235B-A22B-Thinking-2507",
+  "num_players": 5,
+  "num_rounds": 5,
+  "round_results": [],
+  "agents": [
+    {
+      "name": "Player 1",
+      "messages": []
+    },
+    {
+      "name": "Player 2",
+      "messages": []
+    },
+    {
+      "name": "Player 3",
+      "messages": []
+    },
+    {
+      "name": "Player 4",
+      "messages": []
+    },
+    {
+      "name": "Player 5",
+      "messages": []
+    }
+  ]
+}

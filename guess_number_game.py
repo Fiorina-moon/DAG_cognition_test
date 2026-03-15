@@ -176,10 +176,10 @@ class GameManager:
         print("=" * 60)
         logs_dir = os.path.join(_SCRIPT_DIR, "logs")
         os.makedirs(logs_dir, exist_ok=True)
-        self._log_path = os.path.join(
-            logs_dir,
-            f"guess_number_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-        )
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        suffix = os.getenv("GAME_LOG_SUFFIX", "").strip()
+        name = f"guess_number_{ts}_{suffix}.json" if suffix else f"guess_number_{ts}.json"
+        self._log_path = os.path.join(logs_dir, name)
         self._flush_logs()  # 初始空状态写入
 
         for r in range(self.num_rounds):

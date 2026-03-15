@@ -1,0 +1,84 @@
+{
+  "model": "Qwen3-235B-A22B-Thinking-2507",
+  "config_ref": "config/auction_config.json",
+  "summary": {
+    "total_rounds": 0,
+    "intent_correct": 0,
+    "desire_correct": 0,
+    "intent_accuracy_pct": 0,
+    "desire_accuracy_pct": 0
+  },
+  "items": [],
+  "public_board": [],
+  "agents": [
+    {
+      "name": "Agent A",
+      "agent_id": "A",
+      "budget": 10000,
+      "target_item": "item_1",
+      "role": {
+        "competes_with": [
+          "B"
+        ],
+        "cooperates_with": [
+          "C",
+          "D"
+        ]
+      },
+      "memory": [],
+      "messages": []
+    },
+    {
+      "name": "Agent B",
+      "agent_id": "B",
+      "budget": 10000,
+      "target_item": "item_2",
+      "role": {
+        "competes_with": [
+          "A",
+          "C"
+        ],
+        "cooperates_with": [
+          "D"
+        ]
+      },
+      "memory": [],
+      "messages": []
+    },
+    {
+      "name": "Agent C",
+      "agent_id": "C",
+      "budget": 10000,
+      "target_item": "item_3",
+      "role": {
+        "competes_with": [
+          "B"
+        ],
+        "cooperates_with": [
+          "A",
+          "D"
+        ]
+      },
+      "memory": [],
+      "messages": []
+    },
+    {
+      "name": "Agent D",
+      "agent_id": "D",
+      "budget": 10000,
+      "target_item": "item_4",
+      "role": {
+        "competes_with": [],
+        "cooperates_with": [
+          "A",
+          "B",
+          "C"
+        ]
+      },
+      "memory": [],
+      "messages": []
+    }
+  ],
+  "eval_results_raw": [],
+  "item_results": []
+}

@@ -464,10 +464,10 @@ class AuctionGameManager:
         print("=" * 60)
         logs_dir = os.path.join(_SCRIPT_DIR, "logs")
         os.makedirs(logs_dir, exist_ok=True)
-        self._log_path = os.path.join(
-            logs_dir,
-            f"auction_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-        )
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        suffix = os.getenv("GAME_LOG_SUFFIX", "").strip()
+        name = f"auction_{ts}_{suffix}.json" if suffix else f"auction_{ts}.json"
+        self._log_path = os.path.join(logs_dir, name)
         self._flush_logs()
 
         for item in self.items:
