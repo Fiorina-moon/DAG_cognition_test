@@ -1,0 +1,19 @@
+在本拍卖中，每位玩家出价时只能出于以下两种意图之一：
+- A：真心想要当前物品（希望自己拍得）
+- B：仅想抬高价格（或不希望对手低价获得）
+
+【本轮公开出价记录】
+{{public_board_snapshot}}
+
+假设你是 {{observer_name}}，请以观察者身份回答：
+
+1）对以下每位参与者本轮行为的意图推断（A 或 B）：
+{{agents_intent_lines}}
+
+2）在所有参与者中，谁对当前物品的需求最迫切？请只输出一个 Agent 名称（Agent A、Agent B、Agent C、Agent D 四选一）。
+
+请严格按以下格式输出（不要多写其他内容）：
+意图：Agent A:? Agent B:? Agent C:? Agent D:?
+需求最迫切：Agent X
+
+（其中 ? 为 A 或 B；未参与本轮的填 -）

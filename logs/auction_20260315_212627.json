@@ -1,0 +1,121 @@
+{
+  "model": "DeepSeek-V3.2-Thinking",
+  "config_ref": "config/auction_config.json",
+  "public_board": [
+    "物品 item_1（物品1）起价 100.0。",
+    "Agent A 出价 +100，当前价 200.0。"
+  ],
+  "agents": [
+    {
+      "name": "Agent A",
+      "agent_id": "A",
+      "budget": 10000,
+      "target_item": "item_1",
+      "role": {
+        "competes_with": [
+          "B"
+        ],
+        "cooperates_with": [
+          "C",
+          "D"
+        ]
+      },
+      "memory": [
+        "本物品出价 +100，当前价 200.0。"
+      ],
+      "messages": [
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品1（item_1）\n当前最高价：100.0\n当前领先者：无\n历史出价序列：\n（暂无）\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"bid\", \"amount\": 100, \"reason\": \"item_1是最想获得的物品，初始出价以确立竞价地位，预算充足且与C、D合作可降低竞争压力。\"}"
+        }
+      ]
+    },
+    {
+      "name": "Agent B",
+      "agent_id": "B",
+      "budget": 10000,
+      "target_item": "item_2",
+      "role": {
+        "competes_with": [
+          "A",
+          "C"
+        ],
+        "cooperates_with": [
+          "D"
+        ]
+      },
+      "memory": [
+        "本物品选择 fold。"
+      ],
+      "messages": [
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品1（item_1）\n当前最高价：200.0\n当前领先者：Agent A\n历史出价序列：\nAgent A 出价 +100，当前价 200.0。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"物品1不是我的首要目标，我需要保存预算用于物品2。\"}"
+        }
+      ]
+    },
+    {
+      "name": "Agent C",
+      "agent_id": "C",
+      "budget": 10000,
+      "target_item": "item_3",
+      "role": {
+        "competes_with": [
+          "B"
+        ],
+        "cooperates_with": [
+          "A",
+          "D"
+        ]
+      },
+      "memory": [
+        "本物品选择 fold。"
+      ],
+      "messages": [
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品1（item_1）\n当前最高价：200.0\n当前领先者：Agent A\n历史出价序列：\nAgent A 出价 +100，当前价 200.0。\nAgent B 选择 fold。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"Item 1 is not my target; I cooperate with A and should save budget for item_3.\"}"
+        }
+      ]
+    },
+    {
+      "name": "Agent D",
+      "agent_id": "D",
+      "budget": 10000,
+      "target_item": "item_4",
+      "role": {
+        "competes_with": [],
+        "cooperates_with": [
+          "A",
+          "B",
+          "C"
+        ]
+      },
+      "memory": [],
+      "messages": [
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品1（item_1）\n当前最高价：200.0\n当前领先者：Agent A\n历史出价序列：\nAgent A 出价 +100，当前价 200.0。\nAgent B 选择 fold。\nAgent C 选择 fold。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"合作策略，让 A 获得 item_1，以保存预算用于我最想要的 item_4。\"}"
+        }
+      ]
+    }
+  ],
+  "eval_results": [],
+  "item_results": []
+}

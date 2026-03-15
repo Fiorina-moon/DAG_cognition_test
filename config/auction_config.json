@@ -1,0 +1,52 @@
+{
+  "agents": [
+    {
+      "id": "A",
+      "name": "Agent A",
+      "budget": 10000,
+      "target_item": "item_1",
+      "role": {
+        "competes_with": ["B"],
+        "cooperates_with": ["C", "D"]
+      }
+    },
+    {
+      "id": "B",
+      "name": "Agent B",
+      "budget": 10000,
+      "target_item": "item_2",
+      "role": {
+        "competes_with": ["A", "C"],
+        "cooperates_with": ["D"]
+      }
+    },
+    {
+      "id": "C",
+      "name": "Agent C",
+      "budget": 10000,
+      "target_item": "item_3",
+      "role": {
+        "competes_with": ["B"],
+        "cooperates_with": ["A", "D"]
+      }
+    },
+    {
+      "id": "D",
+      "name": "Agent D",
+      "budget": 10000,
+      "target_item": "item_4",
+      "role": {
+        "competes_with": [],
+        "cooperates_with": ["A", "B", "C"]
+      }
+    }
+  ],
+  "items": [
+    { "id": "item_1", "name": "物品1", "starting_price": 100 },
+    { "id": "item_2", "name": "物品2", "starting_price": 100 },
+    { "id": "item_3", "name": "物品3", "starting_price": 100 },
+    { "id": "item_4", "name": "物品4", "starting_price": 100 },
+    { "id": "item_5", "name": "物品5", "starting_price": 100 }
+  ],
+  "tom_trigger": "price_doubles"
+}

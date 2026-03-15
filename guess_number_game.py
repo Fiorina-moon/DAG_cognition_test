@@ -10,35 +10,16 @@ import re
 from datetime import datetime
 from typing import Any
 
-from dotenv import load_dotenv
 from openai import OpenAI
 
-# 从脚本所在目录加载 .env，避免因工作目录不同而读不到配置
-_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-load_dotenv(os.path.join(_SCRIPT_DIR, ".env"))
+from paratera_common import (
+    get_client,
+    get_model_for_game,
+    get_script_dir,
+    parse_model_output,
+)
 
-# ---------- 配置（与 test_connection 一致） ----------
-def _get_model() -> str:
-    model = os.getenv("PARATERA_MODEL", "").strip()
-    if model:
-        return model
-    raw = os.getenv("PARATERA_MODEL_LIST", "").strip()
-    if raw:
-        return [m.strip() for m in raw.split(",") if m.strip()][0]
-    return "DeepSeek-V3.2-Thinking"
-
-
-def _get_client() -> OpenAI:
-    api_key = os.getenv("PARATERA_API_KEY", "").strip()
-    base_url = os.getenv("PARATERA_BASE_URL", "").strip()
-    if not api_key or api_key == "你的API_KEY":
-        raise ValueError("请在 .env 中配置有效的 PARATERA_API_KEY")
-    if not base_url:
-        raise ValueError("请在 .env 中配置 PARATERA_BASE_URL")
-    return OpenAI(api_key=api_key, base_url=base_url)
-
-
-MODEL_NAME = _get_model()
+_SCRIPT_DIR = get_script_dir()
 
 # ---------- 系统提示词（猜数字游戏）：从外部文件加载 ----------
 # Prompt 文件路径：从 .env 的 GUESS_NUMBER_SYSTEM_PROMPT_PATH 读取，为空则用默认路径
@@ -60,21 +41,6 @@ def build_system_prompt(player_index: int) -> str:
     with open(path, "r", encoding="utf-8") as f:
         template = f.read()
     return template.replace("{{player_index}}", str(player_index))
-
-
-def parse_model_output(content: str) -> dict[str, Any]:
-    """
-    从模型回复中解析 JSON。若被包裹在 Markdown 代码块中则先剥离再解析。
-    """
-    text = (content or "").strip()
-    # 剥离 ```json ... ``` 或 ``` ... ```
-    m = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
-    if m:
-        text = m.group(1).strip()
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError as e:
-        raise ValueError(f"JSON 解析失败: {e}. 原始内容: {content[:200]}...")
 
 
 def extract_numbers_from_thought(thought: str) -> list[float]:
@@ -168,8 +134,8 @@ class GameManager:
     def __init__(self, num_players: int = 5, num_rounds: int = 5):
         self.num_players = num_players
         self.num_rounds = num_rounds
-        self.model = MODEL_NAME
-        self.client = _get_client()
+        self.model = get_model_for_game()
+        self.client = get_client()
         self.agents: list[Agent] = [
             Agent(f"Player {i}", i, self.model, self.client)
             for i in range(1, num_players + 1)
