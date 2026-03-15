@@ -198,6 +198,21 @@ class AuctionAgent:
             self.history.append({"role": "assistant", "content": f"[调用异常] {e}"})
             raise
 
+    def ask_freeform(self, user_content: str) -> str:
+        """追加 user 消息并调用 API，返回原始回复文本（不解析 JSON）。用于 ToM 观察者提问等。"""
+        self.history.append({"role": "user", "content": user_content})
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=self._build_messages(),
+            )
+            content = response.choices[0].message.content or ""
+            self.history.append({"role": "assistant", "content": content})
+            return content.strip()
+        except Exception as e:
+            self.history.append({"role": "assistant", "content": f"[调用异常] {e}"})
+            raise
+
 
 # ---------- AuctionGameManager ----------
 class AuctionGameManager:
@@ -249,12 +264,71 @@ class AuctionGameManager:
         ]
         return "\n".join(parts)
 
+    def _build_log_summary(self) -> dict[str, Any]:
+        """按物品聚合 ToM 结果，生成可读的 summary 与 items 结构。"""
+        by_item: dict[str, list[dict[str, Any]]] = {}
+        for r in self.eval_results:
+            iid = r.get("item_id", "")
+            if iid not in by_item:
+                by_item[iid] = []
+            by_item[iid].append(r)
+        total_intent = sum(len(r.get("intent_correct", [])) for r in self.eval_results)
+        total_desire = sum(len(r.get("desire_correct", [])) for r in self.eval_results)
+        total_rounds = len(self.eval_results)
+        n_obs = len(self._agent_names)
+        max_intent_per_round = n_obs * (n_obs - 1) if n_obs > 1 else 0
+        max_desire_per_round = n_obs
+        total_max_intent = total_rounds * max_intent_per_round
+        total_max_desire = total_rounds * max_desire_per_round
+        summary = {
+            "total_rounds": total_rounds,
+            "intent_correct": total_intent,
+            "desire_correct": total_desire,
+            "intent_accuracy_pct": round(100 * total_intent / total_max_intent, 1) if total_max_intent else 0,
+            "desire_accuracy_pct": round(100 * total_desire / total_max_desire, 1) if total_max_desire else 0,
+        }
+        items_detailed: list[dict[str, Any]] = []
+        for ir in self.item_results:
+            iid = ir["item_id"]
+            rounds_for_item = by_item.get(iid, [])
+            tom_rounds = [
+                {
+                    "round_no": r["round_no"],
+                    "round_actions": r["round_actions"],
+                    "self_intents": r["self_intents"],
+                    "intent_correct_count": len(r.get("intent_correct", [])),
+                    "desire_correct_count": len(r.get("desire_correct", [])),
+                    "intent_correct": r.get("intent_correct", []),
+                    "desire_correct": r.get("desire_correct", []),
+                }
+                for r in rounds_for_item
+            ]
+            item_intent = sum(len(r.get("intent_correct", [])) for r in rounds_for_item)
+            item_desire = sum(len(r.get("desire_correct", [])) for r in rounds_for_item)
+            items_detailed.append({
+                "item_id": iid,
+                "item_name": ir["item_name"],
+                "auction": {
+                    "starting_price": ir["starting_price"],
+                    "final_price": ir["final_price"],
+                    "winner": ir["winner"],
+                    "board_entries": ir["board_entries"],
+                },
+                "tom_rounds": tom_rounds,
+                "item_intent_correct": item_intent,
+                "item_desire_correct": item_desire,
+            })
+        return {"summary": summary, "items": items_detailed}
+
     def _flush_logs(self) -> None:
         if not self._log_path:
             return
+        log_summary = self._build_log_summary()
         payload = {
             "model": self.model,
             "config_ref": "config/auction_config.json",
+            "summary": log_summary["summary"],
+            "items": log_summary["items"],
             "public_board": list(self.public_board),
             "agents": [
                 {
@@ -268,7 +342,7 @@ class AuctionGameManager:
                 }
                 for a in self.agents
             ],
-            "eval_results": self.eval_results,
+            "eval_results_raw": self.eval_results,
             "item_results": self.item_results,
         }
         with open(self._log_path, "w", encoding="utf-8") as f:
@@ -315,17 +389,15 @@ class AuctionGameManager:
         intent_guesses: dict[str, dict[str, str | None]] = {}
         most_urgent_guesses: dict[str, str | None] = {}
         agents_intent_lines = " ".join(f"{name}:?" for name in agent_names)
-        for observer_name in agent_names:
+        for agent in self.agents:
+            observer_name = agent.name
             observe_content = (
                 template_observe.replace("{{public_board_snapshot}}", board_snapshot)
                 .replace("{{agents_intent_lines}}", agents_intent_lines)
                 .replace("{{observer_name}}", observer_name)
             )
             try:
-                ans = chat_with_model(
-                    messages=[{"role": "user", "content": observe_content}],
-                    model_name=self.model,
-                )
+                ans = agent.ask_freeform(observe_content)
                 intent_guesses[observer_name] = _parse_observer_intents(ans, agent_names)
                 most_urgent_guesses[observer_name] = _normalize_most_urgent(ans, agent_names)
             except Exception as e:

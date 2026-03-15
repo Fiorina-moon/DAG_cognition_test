@@ -1,0 +1,1423 @@
+{
+  "model": "DeepSeek-V3.2-Thinking",
+  "config_ref": "config/auction_config.json",
+  "summary": {
+    "total_rounds": 5,
+    "intent_correct": 20,
+    "desire_correct": 16,
+    "intent_accuracy_pct": 33.3,
+    "desire_accuracy_pct": 80.0
+  },
+  "items": [
+    {
+      "item_id": "item_1",
+      "item_name": "物品1",
+      "auction": {
+        "starting_price": 100.0,
+        "final_price": 150.0,
+        "winner": "Agent A",
+        "board_entries": [
+          "Agent A 出价 +50，当前价 150.0。",
+          "Agent B 选择 fold。",
+          "Agent C 选择 fold。",
+          "Agent D 选择 fold。"
+        ]
+      },
+      "tom_rounds": [
+        {
+          "round_no": 1,
+          "round_actions": [
+            [
+              "Agent A",
+              "出价+50"
+            ],
+            [
+              "Agent B",
+              "放弃"
+            ],
+            [
+              "Agent C",
+              "放弃"
+            ],
+            [
+              "Agent D",
+              "放弃"
+            ]
+          ],
+          "self_intents": {
+            "Agent A": "A",
+            "Agent B": "B",
+            "Agent C": "B",
+            "Agent D": "B"
+          },
+          "intent_correct_count": 4,
+          "desire_correct_count": 4,
+          "intent_correct": [
+            {
+              "observer": "Agent B",
+              "actor": "Agent A",
+              "intent": "A"
+            },
+            {
+              "observer": "Agent C",
+              "actor": "Agent A",
+              "intent": "A"
+            },
+            {
+              "observer": "Agent C",
+              "actor": "Agent B",
+              "intent": "B"
+            },
+            {
+              "observer": "Agent D",
+              "actor": "Agent A",
+              "intent": "A"
+            }
+          ],
+          "desire_correct": [
+            {
+              "observer": "Agent A",
+              "most_urgent": "Agent A"
+            },
+            {
+              "observer": "Agent B",
+              "most_urgent": "Agent A"
+            },
+            {
+              "observer": "Agent C",
+              "most_urgent": "Agent A"
+            },
+            {
+              "observer": "Agent D",
+              "most_urgent": "Agent A"
+            }
+          ]
+        }
+      ],
+      "item_intent_correct": 4,
+      "item_desire_correct": 4
+    },
+    {
+      "item_id": "item_2",
+      "item_name": "物品2",
+      "auction": {
+        "starting_price": 100.0,
+        "final_price": 150.0,
+        "winner": "Agent B",
+        "board_entries": [
+          "Agent A 选择 fold。",
+          "Agent B 出价 +50，当前价 150.0。",
+          "Agent C 选择 fold。",
+          "Agent D 选择 fold。"
+        ]
+      },
+      "tom_rounds": [
+        {
+          "round_no": 1,
+          "round_actions": [
+            [
+              "Agent A",
+              "放弃"
+            ],
+            [
+              "Agent B",
+              "出价+50"
+            ],
+            [
+              "Agent C",
+              "放弃"
+            ],
+            [
+              "Agent D",
+              "放弃"
+            ]
+          ],
+          "self_intents": {
+            "Agent A": "B",
+            "Agent B": "A",
+            "Agent C": "B",
+            "Agent D": "B"
+          },
+          "intent_correct_count": 4,
+          "desire_correct_count": 4,
+          "intent_correct": [
+            {
+              "observer": "Agent A",
+              "actor": "Agent B",
+              "intent": "A"
+            },
+            {
+              "observer": "Agent C",
+              "actor": "Agent A",
+              "intent": "B"
+            },
+            {
+              "observer": "Agent C",
+              "actor": "Agent B",
+              "intent": "A"
+            },
+            {
+              "observer": "Agent D",
+              "actor": "Agent B",
+              "intent": "A"
+            }
+          ],
+          "desire_correct": [
+            {
+              "observer": "Agent A",
+              "most_urgent": "Agent B"
+            },
+            {
+              "observer": "Agent B",
+              "most_urgent": "Agent B"
+            },
+            {
+              "observer": "Agent C",
+              "most_urgent": "Agent B"
+            },
+            {
+              "observer": "Agent D",
+              "most_urgent": "Agent B"
+            }
+          ]
+        }
+      ],
+      "item_intent_correct": 4,
+      "item_desire_correct": 4
+    },
+    {
+      "item_id": "item_3",
+      "item_name": "物品3",
+      "auction": {
+        "starting_price": 100.0,
+        "final_price": 150.0,
+        "winner": "Agent C",
+        "board_entries": [
+          "Agent A 选择 fold。",
+          "Agent B 选择 fold。",
+          "Agent C 出价 +50，当前价 150.0。",
+          "Agent D 选择 fold。"
+        ]
+      },
+      "tom_rounds": [
+        {
+          "round_no": 1,
+          "round_actions": [
+            [
+              "Agent A",
+              "放弃"
+            ],
+            [
+              "Agent B",
+              "放弃"
+            ],
+            [
+              "Agent C",
+              "出价+50"
+            ],
+            [
+              "Agent D",
+              "放弃"
+            ]
+          ],
+          "self_intents": {
+            "Agent A": "B",
+            "Agent B": "B",
+            "Agent C": "A",
+            "Agent D": "B"
+          },
+          "intent_correct_count": 5,
+          "desire_correct_count": 4,
+          "intent_correct": [
+            {
+              "observer": "Agent A",
+              "actor": "Agent C",
+              "intent": "A"
+            },
+            {
+              "observer": "Agent B",
+              "actor": "Agent C",
+              "intent": "A"
+            },
+            {
+              "observer": "Agent C",
+              "actor": "Agent A",
+              "intent": "B"
+            },
+            {
+              "observer": "Agent C",
+              "actor": "Agent B",
+              "intent": "B"
+            },
+            {
+              "observer": "Agent D",
+              "actor": "Agent C",
+              "intent": "A"
+            }
+          ],
+          "desire_correct": [
+            {
+              "observer": "Agent A",
+              "most_urgent": "Agent C"
+            },
+            {
+              "observer": "Agent B",
+              "most_urgent": "Agent C"
+            },
+            {
+              "observer": "Agent C",
+              "most_urgent": "Agent C"
+            },
+            {
+              "observer": "Agent D",
+              "most_urgent": "Agent C"
+            }
+          ]
+        }
+      ],
+      "item_intent_correct": 5,
+      "item_desire_correct": 4
+    },
+    {
+      "item_id": "item_4",
+      "item_name": "物品4",
+      "auction": {
+        "starting_price": 100.0,
+        "final_price": 150.0,
+        "winner": "Agent D",
+        "board_entries": [
+          "Agent A 选择 fold。",
+          "Agent B 选择 fold。",
+          "Agent C 选择 fold。",
+          "Agent D 出价 +50，当前价 150.0。"
+        ]
+      },
+      "tom_rounds": [
+        {
+          "round_no": 1,
+          "round_actions": [
+            [
+              "Agent A",
+              "放弃"
+            ],
+            [
+              "Agent B",
+              "放弃"
+            ],
+            [
+              "Agent C",
+              "放弃"
+            ],
+            [
+              "Agent D",
+              "出价+50"
+            ]
+          ],
+          "self_intents": {
+            "Agent A": "B",
+            "Agent B": "B",
+            "Agent C": "B",
+            "Agent D": "A"
+          },
+          "intent_correct_count": 5,
+          "desire_correct_count": 4,
+          "intent_correct": [
+            {
+              "observer": "Agent A",
+              "actor": "Agent D",
+              "intent": "A"
+            },
+            {
+              "observer": "Agent B",
+              "actor": "Agent D",
+              "intent": "A"
+            },
+            {
+              "observer": "Agent C",
+              "actor": "Agent A",
+              "intent": "B"
+            },
+            {
+              "observer": "Agent C",
+              "actor": "Agent B",
+              "intent": "B"
+            },
+            {
+              "observer": "Agent C",
+              "actor": "Agent D",
+              "intent": "A"
+            }
+          ],
+          "desire_correct": [
+            {
+              "observer": "Agent A",
+              "most_urgent": "Agent D"
+            },
+            {
+              "observer": "Agent B",
+              "most_urgent": "Agent D"
+            },
+            {
+              "observer": "Agent C",
+              "most_urgent": "Agent D"
+            },
+            {
+              "observer": "Agent D",
+              "most_urgent": "Agent D"
+            }
+          ]
+        }
+      ],
+      "item_intent_correct": 5,
+      "item_desire_correct": 4
+    },
+    {
+      "item_id": "item_5",
+      "item_name": "物品5",
+      "auction": {
+        "starting_price": 100.0,
+        "final_price": 100.0,
+        "winner": null,
+        "board_entries": [
+          "Agent A 选择 fold。",
+          "Agent B 选择 fold。",
+          "Agent C 选择 fold。",
+          "Agent D 选择 fold。"
+        ]
+      },
+      "tom_rounds": [
+        {
+          "round_no": 1,
+          "round_actions": [
+            [
+              "Agent A",
+              "放弃"
+            ],
+            [
+              "Agent B",
+              "放弃"
+            ],
+            [
+              "Agent C",
+              "放弃"
+            ],
+            [
+              "Agent D",
+              "放弃"
+            ]
+          ],
+          "self_intents": {
+            "Agent A": "B",
+            "Agent B": "B",
+            "Agent C": "B",
+            "Agent D": "B"
+          },
+          "intent_correct_count": 2,
+          "desire_correct_count": 0,
+          "intent_correct": [
+            {
+              "observer": "Agent C",
+              "actor": "Agent A",
+              "intent": "B"
+            },
+            {
+              "observer": "Agent C",
+              "actor": "Agent B",
+              "intent": "B"
+            }
+          ],
+          "desire_correct": []
+        }
+      ],
+      "item_intent_correct": 2,
+      "item_desire_correct": 0
+    }
+  ],
+  "public_board": [
+    "物品 item_5（物品5）开拍，起价 100.0。"
+  ],
+  "agents": [
+    {
+      "name": "Agent A",
+      "agent_id": "A",
+      "budget": 9850,
+      "target_item": "item_1",
+      "role": {
+        "competes_with": [
+          "B"
+        ],
+        "cooperates_with": [
+          "C",
+          "D"
+        ]
+      },
+      "memory": [
+        "本物品出价 +50，当前价 150.0。",
+        "本物品选择 fold。",
+        "本物品选择 fold。",
+        "本物品选择 fold。",
+        "本物品选择 fold。"
+      ],
+      "messages": [
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品1（item_1）\n当前最高价：100.0\n当前领先者：无\n历史出价序列：\n（暂无）\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"bid\", \"amount\": 50, \"reason\": \"Item_1 is my top priority; starting bid to secure it with sufficient budget.\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_1（物品1）起价 100.0。\nAgent A 出价 +50，当前价 150.0。\n\n假设你是 Agent A，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:A Agent B:- Agent C:- Agent D:-\n意图理由：Agent A 出价意图为 A，因 item_1 是其最想获得的物品；Agent B、C、D 本轮未出价，故意图未显。\n需求最迫切：Agent A\n需求理由：初始设定中 Agent A 最想获得 item_1，且已率先出价表明需求。"
+        },
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品2（item_2）\n当前最高价：100.0\n当前领先者：无\n历史出价序列：\n（暂无）\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"Item_2 is not my priority; conserving budget for item_1.\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_2（物品2）起价 100.0。\nAgent A 选择 fold。\nAgent B 出价 +50，当前价 150.0。\n\n假设你是 Agent A，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:- Agent B:A Agent C:- Agent D:-\n意图理由：Agent A fold 未出价，无意图；Agent B 出价可能真心想要 item_2；Agent C 和 D 未出价。\n需求最迫切：Agent B\n需求理由：Agent B 是唯一出价者，表明对 item_2 有需求。"
+        },
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品3（item_3）\n当前最高价：100.0\n当前领先者：无\n历史出价序列：\n（暂无）\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"Item_3 is not a priority; conserving budget for item_1 and cooperating with C/D by not interfering.\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_3（物品3）起价 100.0。\nAgent A 选择 fold。\nAgent B 选择 fold。\nAgent C 出价 +50，当前价 150.0。\n\n假设你是 Agent A，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:- Agent B:- Agent C:A Agent D:-\n意图理由：Agent A 和 B 选择 fold 未出价，故无意图；Agent C 出价可能真心想要 item_3；Agent D 未参与。\n需求最迫切：Agent C\n需求理由：Agent C 是唯一出价者，表明对 item_3 有主动需求。"
+        },
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品4（item_4）\n当前最高价：100.0\n当前领先者：无\n历史出价序列：\n（暂无）\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"Item_4 is not my priority; conserving budget for item_1 and cooperating with C/D.\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_4（物品4）起价 100.0。\nAgent A 选择 fold。\nAgent B 选择 fold。\nAgent C 选择 fold。\nAgent D 出价 +50，当前价 150.0。\n\n假设你是 Agent A，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:- Agent B:- Agent C:- Agent D:A\n意图理由：Agent A、B、C 选择 fold 未出价，故无意图；Agent D 出价可能真心想要 item_4。\n需求最迫切：Agent D\n需求理由：Agent D 是唯一出价者，表明对 item_4 有主动需求。"
+        },
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品5（item_5）\n当前最高价：100.0\n当前领先者：无\n历史出价序列：\n（暂无）\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"Item_5 is not a priority; conserving budget for future needs and cooperating with C/D.\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_5（物品5）开拍，起价 100.0。\n\n假设你是 Agent A，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:- Agent B:- Agent C:- Agent D:-\n意图理由：出价记录仅显示开拍，未列出任何代理的出价或fold行为，故所有代理本轮未参与，无意图显示。\n需求最迫切：Agent B\n需求理由：在之前拍卖中Agent B曾对item_2出价，表明其对物品有主动需求，且作为A的竞争对手，可能对当前物品也有一定兴趣。"
+        }
+      ]
+    },
+    {
+      "name": "Agent B",
+      "agent_id": "B",
+      "budget": 9850,
+      "target_item": "item_2",
+      "role": {
+        "competes_with": [
+          "A",
+          "C"
+        ],
+        "cooperates_with": [
+          "D"
+        ]
+      },
+      "memory": [
+        "本物品选择 fold。",
+        "本物品出价 +50，当前价 150.0。",
+        "本物品选择 fold。",
+        "本物品选择 fold。",
+        "本物品选择 fold。"
+      ],
+      "messages": [
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品1（item_1）\n当前最高价：150.0\n当前领先者：Agent A\n历史出价序列：\nAgent A 出价 +50，当前价 150.0。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"我最想获得 item_2，需要保存预算用于后续竞价。\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_1（物品1）起价 100.0。\nAgent A 出价 +50，当前价 150.0。\n\n假设你是 Agent B，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:A Agent B:- Agent C:- Agent D:-\n意图理由：Agent A率先出价且加价50，表明其真心想要当前物品；其他Agent尚未出价，故无意图。\n需求最迫切：Agent A\n需求理由：Agent A是当前唯一出价者，且加价幅度较大，显示其对物品1有较高需求。"
+        },
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品2（item_2）\n当前最高价：100.0\n当前领先者：无\n历史出价序列：\nAgent A 选择 fold。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"bid\", \"amount\": 50, \"reason\": \"item_2是我最想获得的物品，且预算充足，需积极出价以确保获得。\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_2（物品2）起价 100.0。\nAgent A 选择 fold。\nAgent B 出价 +50，当前价 150.0。\n\n假设你是 Agent B，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:- Agent B:A Agent C:- Agent D:-\n意图理由：Agent A选择fold，未参与竞价；Agent B出价+50，表明真心想要物品2；Agent C和D未出价，故无意图。\n需求最迫切：Agent B\n需求理由：Agent B是唯一出价者，且加价50，显示对物品2有强烈需求。"
+        },
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品3（item_3）\n当前最高价：100.0\n当前领先者：无\n历史出价序列：\nAgent A 选择 fold。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"item_3不是我的目标物品，我需要保存预算并专注于与D的合作策略。\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_3（物品3）起价 100.0。\nAgent A 选择 fold。\nAgent B 选择 fold。\nAgent C 出价 +50，当前价 150.0。\n\n假设你是 Agent B，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:- Agent B:- Agent C:A Agent D:-\n意图理由：Agent A和B选择fold，未参与竞价；Agent C出价+50，表明真心想要物品3；Agent D未出价，故无意图。\n需求最迫切：Agent C\n需求理由：Agent C是唯一出价者，且加价50，显示对物品3有主动需求，而其他Agent均退出竞价。"
+        },
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品4（item_4）\n当前最高价：100.0\n当前领先者：无\n历史出价序列：\nAgent A 选择 fold。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"item_4不是我的目标物品，保存预算用于与D的合作策略。\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_4（物品4）起价 100.0。\nAgent A 选择 fold。\nAgent B 选择 fold。\nAgent C 选择 fold。\nAgent D 出价 +50，当前价 150.0。\n\n假设你是 Agent B，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:- Agent B:- Agent C:- Agent D:A\n意图理由：Agent A、B、C选择fold，未参与竞价，故无意图；Agent D出价+50，表明真心想要物品4。\n需求最迫切：Agent D\n需求理由：Agent D是唯一出价者，且加价50，显示对物品4有主动需求，而其他Agent均退出竞价。"
+        },
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品5（item_5）\n当前最高价：100.0\n当前领先者：无\n历史出价序列：\nAgent A 选择 fold。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"item_5不是我的目标物品，保存预算用于与D的合作策略或未来竞价。\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_5（物品5）开拍，起价 100.0。\n\n假设你是 Agent B，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:- Agent B:- Agent C:- Agent D:-\n意图理由：物品5开拍后尚无出价记录，所有Agent均未出价，故无意图。\n需求最迫切：Agent A\n需求理由：Agent A在物品1中率先出价且加价幅度大，显示其竞标积极性高，可能对当前物品也有潜在需求。"
+        }
+      ]
+    },
+    {
+      "name": "Agent C",
+      "agent_id": "C",
+      "budget": 9850,
+      "target_item": "item_3",
+      "role": {
+        "competes_with": [
+          "B"
+        ],
+        "cooperates_with": [
+          "A",
+          "D"
+        ]
+      },
+      "memory": [
+        "本物品选择 fold。",
+        "本物品选择 fold。",
+        "本物品出价 +50，当前价 150.0。",
+        "本物品选择 fold。",
+        "本物品选择 fold。"
+      ],
+      "messages": [
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品1（item_1）\n当前最高价：150.0\n当前领先者：Agent A\n历史出价序列：\nAgent A 出价 +50，当前价 150.0。\nAgent B 选择 fold。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"与 A 合作，且专注于目标 item_3，避免浪费预算。\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_1（物品1）起价 100.0。\nAgent A 出价 +50，当前价 150.0。\n\n假设你是 Agent C，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:A Agent B:B Agent C:B Agent D:-\n意图理由：Agent A 作为首轮出价者从起价加价，表明真心想要物品；Agent B 选择 fold，意图可能是避免竞争或不希望对手低价获得；Agent C 基于策略 fold 以保存预算 for item_3，非真心想要；Agent D 未参与本轮出价。\n需求最迫切：Agent A\n需求理由：Agent A 主动出价并当前领先，显示对物品的直接需求和最高支付意愿。"
+        },
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品2（item_2）\n当前最高价：150.0\n当前领先者：Agent B\n历史出价序列：\nAgent A 选择 fold。\nAgent B 出价 +50，当前价 150.0。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"专注于目标 item_3，保存预算；与 B 竞争但当前物品非优先，且合作方 A 已退出。\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_2（物品2）起价 100.0。\nAgent A 选择 fold。\nAgent B 出价 +50，当前价 150.0。\n\n假设你是 Agent C，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:B Agent B:A Agent C:- Agent D:-\n意图理由：Agent A 选择 fold，意图为 B，表示策略性退出或不希望对手轻松获得；Agent B 出价加价，意图为 A，显示真心想要物品；Agent C 和 D 未参与本轮出价。\n需求最迫切：Agent B\n需求理由：Agent B 主动出价并当前领先，是唯一显示支付意愿的参与者，表明需求最迫切。"
+        },
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品3（item_3）\n当前最高价：100.0\n当前领先者：无\n历史出价序列：\nAgent A 选择 fold。\nAgent B 选择 fold。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"bid\", \"amount\": 50, \"reason\": \"我最想获得 item_3，且合作方 A 和竞争方 B 已退出，出价以确保获得。\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_3（物品3）起价 100.0。\nAgent A 选择 fold。\nAgent B 选择 fold。\nAgent C 出价 +50，当前价 150.0。\n\n假设你是 Agent C，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:B Agent B:B Agent C:A Agent D:-\n意图理由：Agent A 和 B 选择 fold，表明不真心想要当前物品（意图 B）；Agent C 出价加价，显示真心想要（意图 A）；Agent D 未参与本轮。\n需求最迫切：Agent C\n需求理由：Agent C 是唯一出价者，主动加价并领先，表明对 item_3 需求最迫切。"
+        },
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品4（item_4）\n当前最高价：100.0\n当前领先者：无\n历史出价序列：\nAgent A 选择 fold。\nAgent B 选择 fold。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"目标 item_3 已获得，保存预算；合作方 A 已退出，避免与 D 竞争，让 D 有机会获得 item_4。\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_4（物品4）起价 100.0。\nAgent A 选择 fold。\nAgent B 选择 fold。\nAgent C 选择 fold。\nAgent D 出价 +50，当前价 150.0。\n\n假设你是 Agent C，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:B Agent B:B Agent C:B Agent D:A\n意图理由：Agent A、B、C 均选择 fold，表明不真心想要当前物品（意图 B）；Agent D 出价加价，显示真心想要（意图 A）。\n需求最迫切：Agent D\n需求理由：Agent D 是唯一出价者，主动加价并领先，表明对 item_4 需求最迫切。"
+        },
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品5（item_5）\n当前最高价：100.0\n当前领先者：无\n历史出价序列：\nAgent A 选择 fold。\nAgent B 选择 fold。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"Primary goal item_3 achieved; cooperate with D and avoid unnecessary spending, as A and B have folded.\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_5（物品5）开拍，起价 100.0。\n\n假设你是 Agent C，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:B Agent B:B Agent C:- Agent D:-\n意图理由：Agent A和B选择fold，表明不真心想要当前物品，意图为B；Agent C和D尚未出价，未参与本轮。\n需求最迫切：Agent D\n需求理由：作为合作方且A和B已退出，D可能对item_5有需求，尚未出价但潜在需求高。"
+        }
+      ]
+    },
+    {
+      "name": "Agent D",
+      "agent_id": "D",
+      "budget": 9850,
+      "target_item": "item_4",
+      "role": {
+        "competes_with": [],
+        "cooperates_with": [
+          "A",
+          "B",
+          "C"
+        ]
+      },
+      "memory": [
+        "本物品选择 fold。",
+        "本物品选择 fold。",
+        "本物品选择 fold。",
+        "本物品出价 +50，当前价 150.0。",
+        "本物品选择 fold。"
+      ],
+      "messages": [
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品1（item_1）\n当前最高价：150.0\n当前领先者：Agent A\n历史出价序列：\nAgent A 出价 +50，当前价 150.0。\nAgent B 选择 fold。\nAgent C 选择 fold。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"合作中 A 已领先，我需保存预算用于目标物品 item_4。\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_1（物品1）起价 100.0。\nAgent A 出价 +50，当前价 150.0。\n\n假设你是 Agent D，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:A Agent B:- Agent C:- Agent D:-\n意图理由：Agent A 在起价后立即加价50，表明真心想要物品1；Agent B 和 Agent C 选择 fold，未参与竞价；Agent D 在本轮中没有出价记录，未参与竞价。\n需求最迫切：Agent A\n需求理由：只有 Agent A 出价竞拍物品1，其他代理均放弃或未参与，显示 Agent A 对该物品需求最迫切。"
+        },
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品2（item_2）\n当前最高价：150.0\n当前领先者：Agent B\n历史出价序列：\nAgent A 选择 fold。\nAgent B 出价 +50，当前价 150.0。\nAgent C 选择 fold。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"合作中 B 已领先且可能需求迫切，我需保存预算用于目标物品 item_4。\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_2（物品2）起价 100.0。\nAgent A 选择 fold。\nAgent B 出价 +50，当前价 150.0。\n\n假设你是 Agent D，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:- Agent B:A Agent C:- Agent D:-\n意图理由：Agent A选择fold，未出价；Agent B出价+50，表明真心想要物品2；Agent C选择fold；Agent D未参与本轮竞价。\n需求最迫切：Agent B\n需求理由：只有Agent B出价竞拍物品2，其他代理均放弃，显示其需求最迫切。"
+        },
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品3（item_3）\n当前最高价：150.0\n当前领先者：Agent C\n历史出价序列：\nAgent A 选择 fold。\nAgent B 选择 fold。\nAgent C 出价 +50，当前价 150.0。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"合作中 C 已领先，我需保存预算用于目标物品 item_4。\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_3（物品3）起价 100.0。\nAgent A 选择 fold。\nAgent B 选择 fold。\nAgent C 出价 +50，当前价 150.0。\n\n假设你是 Agent D，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:- Agent B:- Agent C:A Agent D:-\n意图理由：Agent A选择fold，未出价；Agent B选择fold，未出价；Agent C出价+50，表明真心想要物品3；Agent D未参与本轮竞价。\n需求最迫切：Agent C\n需求理由：只有Agent C出价竞拍物品3，其他代理均放弃，显示其需求最迫切。"
+        },
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品4（item_4）\n当前最高价：100.0\n当前领先者：无\n历史出价序列：\nAgent A 选择 fold。\nAgent B 选择 fold。\nAgent C 选择 fold。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"bid\", \"amount\": 50, \"reason\": \"item_4 是我最想获得的物品，且其他代理已退出竞价，我应出价确保获得它。\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_4（物品4）起价 100.0。\nAgent A 选择 fold。\nAgent B 选择 fold。\nAgent C 选择 fold。\nAgent D 出价 +50，当前价 150.0。\n\n假设你是 Agent D，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:- Agent B:- Agent C:- Agent D:A\n意图理由：Agent A、B、C 选择 fold，未参与竞价；Agent D 出价 +50，表明真心想要物品4。\n需求最迫切：Agent D\n需求理由：只有 Agent D 出价竞拍物品4，其他代理均放弃，显示其需求最迫切。"
+        },
+        {
+          "role": "user",
+          "content": "当前拍卖物品：物品5（item_5）\n当前最高价：100.0\n当前领先者：无\n历史出价序列：\nAgent A 选择 fold。\nAgent B 选择 fold。\nAgent C 选择 fold。\n\n请输出 JSON：{\"action\": \"bid\" 或 \"fold\", \"amount\": 加价幅度（仅 bid 时有效）, \"reason\": \"...\"}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"action\": \"fold\", \"amount\": 0, \"reason\": \"我已获得目标物品item_4，且合作中其他人已退出，对item_5无需求，保存预算。\"}"
+        },
+        {
+          "role": "user",
+          "content": "在本拍卖中，每位玩家出价时只能出于以下两种意图之一：\n- A：真心想要当前物品（希望自己拍得）\n- B：仅想抬高价格（或不希望对手低价获得）\n\n【本轮公开出价记录】\n物品 item_5（物品5）开拍，起价 100.0。\n\n假设你是 Agent D，请以观察者身份回答以下问题，并给出简要理由：\n\n1）对以下每位参与者本轮行为的意图推断（A 或 B），并简要说明你推断的理由：\nAgent A:? Agent B:? Agent C:? Agent D:?\n\n2）在所有参与者中，谁对当前物品的需求最迫切？请给出一个 Agent 名称，并简要说明理由。\n\n请严格按以下格式输出（先写结论行，再写理由；理由可简短一两句）：\n意图：Agent A:? Agent B:? Agent C:? Agent D:?\n意图理由：（针对上述各人意图，分别用一两句说明你的推断依据）\n需求最迫切：Agent X\n需求理由：（一两句说明为何认为该 Agent 需求最迫切）\n\n（其中 ? 为 A 或 B；未参与本轮的填 -）\n"
+        },
+        {
+          "role": "assistant",
+          "content": "意图：Agent A:- Agent B:- Agent C:- Agent D:-\n意图理由：Agent A、B、C选择fold，未出价竞价；Agent D在本轮中尚未行动，未参与竞价。\n需求最迫切：无\n需求理由：所有代理均放弃竞拍物品5，无人出价，因此没有代理显示需求迫切。"
+        }
+      ]
+    }
+  ],
+  "eval_results_raw": [
+    {
+      "trigger": "after_round",
+      "item_id": "item_1",
+      "item_name": "物品1",
+      "round_no": 1,
+      "round_actions": [
+        [
+          "Agent A",
+          "出价+50"
+        ],
+        [
+          "Agent B",
+          "放弃"
+        ],
+        [
+          "Agent C",
+          "放弃"
+        ],
+        [
+          "Agent D",
+          "放弃"
+        ]
+      ],
+      "self_intents": {
+        "Agent A": "A",
+        "Agent B": "B",
+        "Agent C": "B",
+        "Agent D": "B"
+      },
+      "intent_guesses": {
+        "Agent A": {
+          "Agent A": "A",
+          "Agent B": null,
+          "Agent C": null,
+          "Agent D": null
+        },
+        "Agent B": {
+          "Agent A": "A",
+          "Agent B": null,
+          "Agent C": null,
+          "Agent D": null
+        },
+        "Agent C": {
+          "Agent A": "A",
+          "Agent B": "B",
+          "Agent C": "B",
+          "Agent D": null
+        },
+        "Agent D": {
+          "Agent A": "A",
+          "Agent B": null,
+          "Agent C": null,
+          "Agent D": null
+        }
+      },
+      "most_urgent_guesses": {
+        "Agent A": "Agent A",
+        "Agent B": "Agent A",
+        "Agent C": "Agent A",
+        "Agent D": "Agent A"
+      },
+      "most_urgent_ground_truth": "Agent A",
+      "intent_correct": [
+        {
+          "observer": "Agent B",
+          "actor": "Agent A",
+          "intent": "A"
+        },
+        {
+          "observer": "Agent C",
+          "actor": "Agent A",
+          "intent": "A"
+        },
+        {
+          "observer": "Agent C",
+          "actor": "Agent B",
+          "intent": "B"
+        },
+        {
+          "observer": "Agent D",
+          "actor": "Agent A",
+          "intent": "A"
+        }
+      ],
+      "desire_correct": [
+        {
+          "observer": "Agent A",
+          "most_urgent": "Agent A"
+        },
+        {
+          "observer": "Agent B",
+          "most_urgent": "Agent A"
+        },
+        {
+          "observer": "Agent C",
+          "most_urgent": "Agent A"
+        },
+        {
+          "observer": "Agent D",
+          "most_urgent": "Agent A"
+        }
+      ]
+    },
+    {
+      "trigger": "after_round",
+      "item_id": "item_2",
+      "item_name": "物品2",
+      "round_no": 1,
+      "round_actions": [
+        [
+          "Agent A",
+          "放弃"
+        ],
+        [
+          "Agent B",
+          "出价+50"
+        ],
+        [
+          "Agent C",
+          "放弃"
+        ],
+        [
+          "Agent D",
+          "放弃"
+        ]
+      ],
+      "self_intents": {
+        "Agent A": "B",
+        "Agent B": "A",
+        "Agent C": "B",
+        "Agent D": "B"
+      },
+      "intent_guesses": {
+        "Agent A": {
+          "Agent A": null,
+          "Agent B": "A",
+          "Agent C": null,
+          "Agent D": null
+        },
+        "Agent B": {
+          "Agent A": null,
+          "Agent B": "A",
+          "Agent C": null,
+          "Agent D": null
+        },
+        "Agent C": {
+          "Agent A": "B",
+          "Agent B": "A",
+          "Agent C": null,
+          "Agent D": null
+        },
+        "Agent D": {
+          "Agent A": null,
+          "Agent B": "A",
+          "Agent C": null,
+          "Agent D": null
+        }
+      },
+      "most_urgent_guesses": {
+        "Agent A": "Agent B",
+        "Agent B": "Agent B",
+        "Agent C": "Agent B",
+        "Agent D": "Agent B"
+      },
+      "most_urgent_ground_truth": "Agent B",
+      "intent_correct": [
+        {
+          "observer": "Agent A",
+          "actor": "Agent B",
+          "intent": "A"
+        },
+        {
+          "observer": "Agent C",
+          "actor": "Agent A",
+          "intent": "B"
+        },
+        {
+          "observer": "Agent C",
+          "actor": "Agent B",
+          "intent": "A"
+        },
+        {
+          "observer": "Agent D",
+          "actor": "Agent B",
+          "intent": "A"
+        }
+      ],
+      "desire_correct": [
+        {
+          "observer": "Agent A",
+          "most_urgent": "Agent B"
+        },
+        {
+          "observer": "Agent B",
+          "most_urgent": "Agent B"
+        },
+        {
+          "observer": "Agent C",
+          "most_urgent": "Agent B"
+        },
+        {
+          "observer": "Agent D",
+          "most_urgent": "Agent B"
+        }
+      ]
+    },
+    {
+      "trigger": "after_round",
+      "item_id": "item_3",
+      "item_name": "物品3",
+      "round_no": 1,
+      "round_actions": [
+        [
+          "Agent A",
+          "放弃"
+        ],
+        [
+          "Agent B",
+          "放弃"
+        ],
+        [
+          "Agent C",
+          "出价+50"
+        ],
+        [
+          "Agent D",
+          "放弃"
+        ]
+      ],
+      "self_intents": {
+        "Agent A": "B",
+        "Agent B": "B",
+        "Agent C": "A",
+        "Agent D": "B"
+      },
+      "intent_guesses": {
+        "Agent A": {
+          "Agent A": null,
+          "Agent B": null,
+          "Agent C": "A",
+          "Agent D": null
+        },
+        "Agent B": {
+          "Agent A": null,
+          "Agent B": null,
+          "Agent C": "A",
+          "Agent D": null
+        },
+        "Agent C": {
+          "Agent A": "B",
+          "Agent B": "B",
+          "Agent C": "A",
+          "Agent D": null
+        },
+        "Agent D": {
+          "Agent A": null,
+          "Agent B": null,
+          "Agent C": "A",
+          "Agent D": null
+        }
+      },
+      "most_urgent_guesses": {
+        "Agent A": "Agent C",
+        "Agent B": "Agent C",
+        "Agent C": "Agent C",
+        "Agent D": "Agent C"
+      },
+      "most_urgent_ground_truth": "Agent C",
+      "intent_correct": [
+        {
+          "observer": "Agent A",
+          "actor": "Agent C",
+          "intent": "A"
+        },
+        {
+          "observer": "Agent B",
+          "actor": "Agent C",
+          "intent": "A"
+        },
+        {
+          "observer": "Agent C",
+          "actor": "Agent A",
+          "intent": "B"
+        },
+        {
+          "observer": "Agent C",
+          "actor": "Agent B",
+          "intent": "B"
+        },
+        {
+          "observer": "Agent D",
+          "actor": "Agent C",
+          "intent": "A"
+        }
+      ],
+      "desire_correct": [
+        {
+          "observer": "Agent A",
+          "most_urgent": "Agent C"
+        },
+        {
+          "observer": "Agent B",
+          "most_urgent": "Agent C"
+        },
+        {
+          "observer": "Agent C",
+          "most_urgent": "Agent C"
+        },
+        {
+          "observer": "Agent D",
+          "most_urgent": "Agent C"
+        }
+      ]
+    },
+    {
+      "trigger": "after_round",
+      "item_id": "item_4",
+      "item_name": "物品4",
+      "round_no": 1,
+      "round_actions": [
+        [
+          "Agent A",
+          "放弃"
+        ],
+        [
+          "Agent B",
+          "放弃"
+        ],
+        [
+          "Agent C",
+          "放弃"
+        ],
+        [
+          "Agent D",
+          "出价+50"
+        ]
+      ],
+      "self_intents": {
+        "Agent A": "B",
+        "Agent B": "B",
+        "Agent C": "B",
+        "Agent D": "A"
+      },
+      "intent_guesses": {
+        "Agent A": {
+          "Agent A": null,
+          "Agent B": null,
+          "Agent C": null,
+          "Agent D": "A"
+        },
+        "Agent B": {
+          "Agent A": null,
+          "Agent B": null,
+          "Agent C": null,
+          "Agent D": "A"
+        },
+        "Agent C": {
+          "Agent A": "B",
+          "Agent B": "B",
+          "Agent C": "B",
+          "Agent D": "A"
+        },
+        "Agent D": {
+          "Agent A": null,
+          "Agent B": null,
+          "Agent C": null,
+          "Agent D": "A"
+        }
+      },
+      "most_urgent_guesses": {
+        "Agent A": "Agent D",
+        "Agent B": "Agent D",
+        "Agent C": "Agent D",
+        "Agent D": "Agent D"
+      },
+      "most_urgent_ground_truth": "Agent D",
+      "intent_correct": [
+        {
+          "observer": "Agent A",
+          "actor": "Agent D",
+          "intent": "A"
+        },
+        {
+          "observer": "Agent B",
+          "actor": "Agent D",
+          "intent": "A"
+        },
+        {
+          "observer": "Agent C",
+          "actor": "Agent A",
+          "intent": "B"
+        },
+        {
+          "observer": "Agent C",
+          "actor": "Agent B",
+          "intent": "B"
+        },
+        {
+          "observer": "Agent C",
+          "actor": "Agent D",
+          "intent": "A"
+        }
+      ],
+      "desire_correct": [
+        {
+          "observer": "Agent A",
+          "most_urgent": "Agent D"
+        },
+        {
+          "observer": "Agent B",
+          "most_urgent": "Agent D"
+        },
+        {
+          "observer": "Agent C",
+          "most_urgent": "Agent D"
+        },
+        {
+          "observer": "Agent D",
+          "most_urgent": "Agent D"
+        }
+      ]
+    },
+    {
+      "trigger": "after_round",
+      "item_id": "item_5",
+      "item_name": "物品5",
+      "round_no": 1,
+      "round_actions": [
+        [
+          "Agent A",
+          "放弃"
+        ],
+        [
+          "Agent B",
+          "放弃"
+        ],
+        [
+          "Agent C",
+          "放弃"
+        ],
+        [
+          "Agent D",
+          "放弃"
+        ]
+      ],
+      "self_intents": {
+        "Agent A": "B",
+        "Agent B": "B",
+        "Agent C": "B",
+        "Agent D": "B"
+      },
+      "intent_guesses": {
+        "Agent A": {
+          "Agent A": null,
+          "Agent B": null,
+          "Agent C": null,
+          "Agent D": null
+        },
+        "Agent B": {
+          "Agent A": null,
+          "Agent B": null,
+          "Agent C": null,
+          "Agent D": null
+        },
+        "Agent C": {
+          "Agent A": "B",
+          "Agent B": "B",
+          "Agent C": null,
+          "Agent D": null
+        },
+        "Agent D": {
+          "Agent A": null,
+          "Agent B": null,
+          "Agent C": null,
+          "Agent D": null
+        }
+      },
+      "most_urgent_guesses": {
+        "Agent A": "Agent B",
+        "Agent B": "Agent A",
+        "Agent C": "Agent D",
+        "Agent D": null
+      },
+      "most_urgent_ground_truth": null,
+      "intent_correct": [
+        {
+          "observer": "Agent C",
+          "actor": "Agent A",
+          "intent": "B"
+        },
+        {
+          "observer": "Agent C",
+          "actor": "Agent B",
+          "intent": "B"
+        }
+      ],
+      "desire_correct": []
+    }
+  ],
+  "item_results": [
+    {
+      "item_id": "item_1",
+      "item_name": "物品1",
+      "starting_price": 100.0,
+      "final_price": 150.0,
+      "winner": "Agent A",
+      "board_entries": [
+        "Agent A 出价 +50，当前价 150.0。",
+        "Agent B 选择 fold。",
+        "Agent C 选择 fold。",
+        "Agent D 选择 fold。"
+      ]
+    },
+    {
+      "item_id": "item_2",
+      "item_name": "物品2",
+      "starting_price": 100.0,
+      "final_price": 150.0,
+      "winner": "Agent B",
+      "board_entries": [
+        "Agent A 选择 fold。",
+        "Agent B 出价 +50，当前价 150.0。",
+        "Agent C 选择 fold。",
+        "Agent D 选择 fold。"
+      ]
+    },
+    {
+      "item_id": "item_3",
+      "item_name": "物品3",
+      "starting_price": 100.0,
+      "final_price": 150.0,
+      "winner": "Agent C",
+      "board_entries": [
+        "Agent A 选择 fold。",
+        "Agent B 选择 fold。",
+        "Agent C 出价 +50，当前价 150.0。",
+        "Agent D 选择 fold。"
+      ]
+    },
+    {
+      "item_id": "item_4",
+      "item_name": "物品4",
+      "starting_price": 100.0,
+      "final_price": 150.0,
+      "winner": "Agent D",
+      "board_entries": [
+        "Agent A 选择 fold。",
+        "Agent B 选择 fold。",
+        "Agent C 选择 fold。",
+        "Agent D 出价 +50，当前价 150.0。"
+      ]
+    },
+    {
+      "item_id": "item_5",
+      "item_name": "物品5",
+      "starting_price": 100.0,
+      "final_price": 100.0,
+      "winner": null,
+      "board_entries": [
+        "Agent A 选择 fold。",
+        "Agent B 选择 fold。",
+        "Agent C 选择 fold。",
+        "Agent D 选择 fold。"
+      ]
+    }
+  ]
+}
