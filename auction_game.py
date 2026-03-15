@@ -298,6 +298,8 @@ class AuctionGameManager:
                     "self_intents": r["self_intents"],
                     "intent_correct_count": len(r.get("intent_correct", [])),
                     "desire_correct_count": len(r.get("desire_correct", [])),
+                    "intent_accuracy_pct_round": r.get("intent_accuracy_pct_round"),
+                    "desire_accuracy_pct_round": r.get("desire_accuracy_pct_round"),
                     "intent_correct": r.get("intent_correct", []),
                     "desire_correct": r.get("desire_correct", []),
                 }
@@ -386,14 +388,19 @@ class AuctionGameManager:
                 print(f"    [ToM 自身意图] {agent_name} 失败: {e}")
                 self_intents[agent_name] = None
 
+        agents_acted_this_round = [name for name, _ in round_actions]
+        agents_not_this_round = [n for n in agent_names if n not in agents_acted_this_round]
+        agents_acted_str = "、".join(agents_acted_this_round) if agents_acted_this_round else "无"
+        agents_not_str = "、".join(agents_not_this_round) if agents_not_this_round else "无"
+
         intent_guesses: dict[str, dict[str, str | None]] = {}
         most_urgent_guesses: dict[str, str | None] = {}
-        agents_intent_lines = " ".join(f"{name}:?" for name in agent_names)
         for agent in self.agents:
             observer_name = agent.name
             observe_content = (
                 template_observe.replace("{{public_board_snapshot}}", board_snapshot)
-                .replace("{{agents_intent_lines}}", agents_intent_lines)
+                .replace("{{agents_acted_this_round}}", agents_acted_str)
+                .replace("{{agents_not_this_round}}", agents_not_str)
                 .replace("{{observer_name}}", observer_name)
             )
             try:
@@ -426,21 +433,30 @@ class AuctionGameManager:
             if gt is not None and guess_urgent is not None and gt == guess_urgent:
                 desire_correct.append({"observer": observer, "most_urgent": gt})
 
+        max_intent_round = len(agents_acted_this_round) * (len(agent_names) - 1) if agent_names else 0
+        max_desire_round = len(agent_names)
+        intent_accuracy_pct_round = round(100 * len(intent_correct) / max_intent_round, 1) if max_intent_round else 0.0
+        desire_accuracy_pct_round = round(100 * len(desire_correct) / max_desire_round, 1) if max_desire_round else 0.0
+
         record = {
             "trigger": "after_round",
             "item_id": item_id,
             "item_name": item_name,
             "round_no": round_no,
             "round_actions": round_actions,
+            "agents_acted_this_round": agents_acted_this_round,
+            "agents_not_this_round": agents_not_this_round,
             "self_intents": self_intents,
             "intent_guesses": intent_guesses,
             "most_urgent_guesses": most_urgent_guesses,
             "most_urgent_ground_truth": most_urgent_ground_truth,
             "intent_correct": intent_correct,
             "desire_correct": desire_correct,
+            "intent_accuracy_pct_round": intent_accuracy_pct_round,
+            "desire_accuracy_pct_round": desire_accuracy_pct_round,
         }
         self.eval_results.append(record)
-        print(f"    [ToM] 第{round_no}轮 自身意图={self_intents} | 意图推测正确={len(intent_correct)}次 | 欲望推测正确={len(desire_correct)}次")
+        print(f"    [ToM] 第{round_no}轮 自身意图={self_intents} | 意图正确={len(intent_correct)}/{max_intent_round} ({intent_accuracy_pct_round}%) | 欲望正确={len(desire_correct)}/{max_desire_round} ({desire_accuracy_pct_round}%)")
         self._flush_logs()
 
     def run(self) -> None:

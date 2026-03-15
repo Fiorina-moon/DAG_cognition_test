@@ -115,37 +115,29 @@ def _extract_single_id_from_text(text: str) -> str | None:
     return None
 
 
-# ---------- ToM 回答解析：是否包含「因指控/描述矛盾而产生怀疑」的逻辑 ----------
-_FALSE_BELIEF_PATTERNS = [
-    re.compile(r"因为\s*.*(?:指控|指认|描述|矛盾|怀疑)", re.IGNORECASE),
-    re.compile(r"(?:指控|指认|描述).*导致\s*.*(?:怀疑|认为)", re.IGNORECASE),
-    re.compile(r"其他人?\s*会?\s*认为\s*.*(P[1-6])", re.IGNORECASE),
-    re.compile(r"大家?\s*怀疑\s*.*(P[1-6])", re.IGNORECASE),
-    re.compile(r"被指控\s*.*(P[1-6])", re.IGNORECASE),
-]
-
-
-def _has_false_belief_reasoning(text: str) -> bool:
-    """判定回答是否包含「推断他人因指控/描述矛盾而产生怀疑」的逻辑。"""
-    if not text or not text.strip():
-        return False
-    for p in _FALSE_BELIEF_PATTERNS:
-        if p.search(text):
-            return True
-    return False
-
-
-def _extract_predicted_belief_id(text: str) -> str | None:
-    """从 False Belief 回答中提取「其他人认为的变色龙」的玩家 ID。"""
-    if not text:
-        return None
-    # 明确写出「认为 X 是」「怀疑 X」「投给 X」等
-    for pid in ["P1", "P2", "P3", "P4", "P5", "P6"]:
-        if re.search(rf"(?:认为|怀疑|投给|选|是)\s*{pid}\b", text, re.IGNORECASE):
-            return pid
-        if re.search(rf"\b{pid}\s*(?:是|为).*变色龙", text, re.IGNORECASE):
-            return pid
-    return _extract_single_id_from_text(text)
+def _parse_vote_and_reason(raw: str) -> tuple[str | None, str]:
+    """从投票自由发言中解析「投票对象」与「理由」。支持 投票：P? / 理由：… 或首行 ID + 其余为理由。"""
+    if not raw or not raw.strip():
+        return None, ""
+    text = raw.strip()
+    vote_id = None
+    reason = ""
+    # 显式格式：投票：P3  理由：…
+    m = re.search(r"投票[：:]\s*(P[1-6])\b", text, re.IGNORECASE)
+    if m:
+        vote_id = m.group(1).upper()
+    mr = re.search(r"理由[：:]\s*([\s\S]*)", text)
+    if mr:
+        reason = mr.group(1).strip()
+    if not vote_id:
+        vote_id = _extract_single_id_from_text(text)
+    if not reason and vote_id:
+        # 去掉首行/首个 Pn，其余当理由
+        rest = re.sub(r"^(.*?)(P[1-6])\b", "", text, count=1, flags=re.IGNORECASE).strip()
+        rest = rest.lstrip("：: \n")
+        if rest:
+            reason = rest
+    return vote_id, reason
 
 
 # ---------- ChameleonPlayer：单名玩家（含平民/变色龙/线人） ----------
@@ -306,12 +298,11 @@ class ChameleonGameManager:
         self.accuser_id: str | None = None
         self.forced_accusation: bool = False
         self.votes: dict[str, str] = {}
+        self.vote_reasons: list[dict[str, Any]] = []  # [{"player_id","player_name","vote","reason"}, ...]
         self.tom_fact_answer: str = ""
         self.tom_false_belief_answer: str = ""
         self.mole_knowledge_of_chameleon: bool = False
-        self.predicted_others_belief: str | None = None
         self.actual_vote: str | None = None
-        self.false_belief_reasoning_ok: bool = False
         self._log_path: str | None = None
 
     def _get_player_by_id(self, pid: str) -> ChameleonPlayer | None:
@@ -327,6 +318,68 @@ class ChameleonGameManager:
                 return cid
         return self.civilian_ids[0]
 
+    def _format_vote_reasons_for_tom(self) -> str:
+        """将 vote_reasons 格式化为供 ToM 提问参考的「投票自由发言」文本。"""
+        if not self.vote_reasons:
+            return "（暂无投票自由发言）"
+        lines = []
+        for r in self.vote_reasons:
+            pid = r.get("player_id", "")
+            name = r.get("player_name", "")
+            vote = r.get("vote", "")
+            reason = (r.get("reason") or "").strip()
+            lines.append(f"{pid}（{name}）投给 {vote}，理由：{reason}")
+        return "\n".join(lines)
+
+    def _build_scripted_vote_reasons(self) -> list[dict[str, Any]]:
+        """
+        为 P1～P5 生成脚本化、有分歧的投票与理由，使多数人怀疑 accused_id 但并非一致，
+        线人必须从混合证据中推断「众人认为是谁」，而非简单从众。
+        """
+        accused = self.accused_id or self._pick_innocent_accused()
+        # 第二怀疑对象：另一名平民（非 accused、非 chameleon）
+        second_suspect = None
+        for cid in self.civilian_ids:
+            if cid != accused and cid != self.chameleon_id:
+                second_suspect = cid
+                break
+        second_suspect = second_suspect or self.civilian_ids[0]
+        # 第三选项：再一名平民，用于 1 人分流
+        third = None
+        for cid in self.civilian_ids:
+            if cid not in (accused, second_suspect):
+                third = cid
+                break
+        third = third or second_suspect
+
+        name_by_id = {p.player_id: p.name for p in self.players}
+        # 分配：3 票给 accused（多数），2 票给 second_suspect（分歧），线人需从分歧中推断多数认为谁
+        script: list[tuple[str, str, str]] = []
+        for i, p in enumerate(self.player_order[:5]):
+            pid = p.player_id
+            if p.role == "chameleon":
+                script.append((pid, accused, "为免暴露身份，跟风投给被指控者。"))
+            elif i == 0:
+                script.append((pid, second_suspect, "描述相对模糊，与关键词关联不强。"))
+            elif i == 1:
+                script.append((pid, accused, "因被指控/成为众人怀疑对象而投票。"))
+            elif i == 2:
+                script.append((pid, accused, "多数人怀疑的对象，跟从集体倾向。"))
+            elif i == 3:
+                script.append((pid, second_suspect, "描述与关键词不太吻合，存在伪装嫌疑。"))
+            else:
+                script.append((pid, third, "描述风格与其他人略有差异。"))
+
+        return [
+            {
+                "player_id": pid,
+                "player_name": name_by_id.get(pid, pid),
+                "vote": vote_id,
+                "reason": reason,
+            }
+            for pid, vote_id, reason in script
+        ]
+
     def _flush_logs(self) -> None:
         if not self._log_path:
             return
@@ -341,18 +394,12 @@ class ChameleonGameManager:
             "accuser_id": self.accuser_id,
             "forced_accusation": self.forced_accusation,
             "votes": dict(self.votes),
+            "vote_reasons": list(self.vote_reasons),
+            "scripted_votes_for_diversity": getattr(self, "scripted_votes_used", False),
             "tom_fact_answer": self.tom_fact_answer,
             "tom_false_belief_answer": self.tom_false_belief_answer,
             "mole_knowledge_of_chameleon": self.mole_knowledge_of_chameleon,
-            "predicted_others_belief": self.predicted_others_belief,
             "actual_vote": self.actual_vote,
-            "false_belief_reasoning_ok": self.false_belief_reasoning_ok,
-            "first_order_tom_pass": (
-                self.mole_knowledge_of_chameleon
-                and self.actual_vote != self.chameleon_id
-                and self.predicted_others_belief == self.accused_id
-                and self.false_belief_reasoning_ok
-            ),
             "agents": [
                 {
                     "player_id": p.player_id,
@@ -367,23 +414,29 @@ class ChameleonGameManager:
             json.dump(payload, f, ensure_ascii=False, indent=2)
 
     def run_description_phase(self) -> None:
-        """描述环节：每人依次发言；若无人指控则强制最后一名发言者指控一名无辜平民。"""
-        print("\n--- 描述环节 ---")
+        """描述环节：每人依次发言，可对先前已发言的玩家发起指控；若全程无人指控则强制最后一名发言者指控一名无辜平民。"""
+        print("\n--- 描述环节（可对先前发言者指控，无人指控则强制指控） ---")
         order = self.player_order
         accused_from_descriptions: str | None = None
         accuser_from_descriptions: str | None = None
 
         for i, player in enumerate(order):
-            ctx = (
-                "当前是描述环节。请用一句话描述与本局主题相关的内容（不要直接说出关键词）。"
-                "若你确信某人是变色龙，可在描述中指控该玩家（写出其 ID，如 P3）。"
-            )
-            if self.descriptions:
-                prev = "  ".join(
-                    f"{d['id']}({d['name']}): {d['text'][:80]}..."
-                    for d in self.descriptions[-3:]
+            if i == 0:
+                ctx = (
+                    "当前是描述环节，你是第一位发言者。请用一句话描述与本局主题相关的内容（不要直接说出关键词）。"
                 )
-                ctx = f"已有发言：{prev}\n\n" + ctx
+            else:
+                prev_list = "\n".join(
+                    f"  {d['id']}（{d['name']}）：{d['text'][:120]}{'…' if len(d['text']) > 120 else ''}"
+                    for d in self.descriptions
+                )
+                prev_ids = "、".join(d["id"] for d in self.descriptions)
+                ctx = (
+                    f"当前是描述环节。以下是先前已发言的玩家及其内容：\n{prev_list}\n\n"
+                    "你可以：（1）用一句话描述与本局主题相关的内容（不要直接说出关键词）；"
+                    "（2）若你对某位先前发言者产生怀疑，可以对其发起指控（在描述中写出「指控 P?」或「我指控 P?」，P? 为上述之一："
+                    f"{prev_ids}）。可以只描述、只指控、或同时描述与指控。"
+                )
             print(f"  {player.name} ({player.player_id}) 描述中…", flush=True)
             try:
                 text = player.speak_description(ctx)
@@ -417,31 +470,62 @@ class ChameleonGameManager:
         self._flush_logs()
 
     def run_voting_phase(self) -> None:
-        """投票环节：每人输出所投玩家 ID；记录线人的 actual_vote。"""
-        print("\n--- 投票环节 ---")
+        """
+        投票环节：并行决策 / 屏蔽他人结果。P1～P5 使用脚本化有分歧投票；
+        线人（P6）投票时不展示其他玩家的投票与理由（屏蔽），避免「先投影响后投」。
+        """
+        print("\n--- 投票环节（屏蔽他人投票结果，并行决策） ---")
         summary = "  ".join(
             f"{d['id']}: {d['text'][:50]}..." for d in self.descriptions
         )
-        accused_note = ""
-        if self.accused_id:
-            accused_note = f"\n当前被指控者（众人怀疑对象）：{self.accused_id}。"
-        vote_prompt = (
+        accused_note = f"\n当前被指控者（众人怀疑对象）：{self.accused_id}。" if self.accused_id else ""
+
+        # P1～P5：脚本化投票（有分歧），不调用 API
+        scripted = self._build_scripted_vote_reasons()
+        self.vote_reasons = list(scripted)
+        self.scripted_votes_used = True
+        for r in scripted:
+            self.votes[r["player_id"]] = r["vote"]
+        for r in scripted:
+            reason_short = (r.get("reason") or "")[:40]
+            print(f"  {r.get('player_name')}（{r.get('player_id')}）脚本投票 → {r.get('vote')}，理由：{reason_short}…")
+
+        # 线人（P6）：投票指令中不包含其他玩家的投票结果（屏蔽），防止先投影响后投
+        mole = self._get_player_by_id(self.mole_id)
+        if not mole:
+            self._flush_logs()
+            return
+        mole_vote_prompt = (
             f"描述环节摘要：{summary}{accused_note}\n\n"
-            "请投票选出你认为的变色龙。只输出一个玩家 ID（P1 至 P6 中的一个），不要其他内容。"
+            "请投票选出你认为的变色龙，并说明你的投票理由（一句话即可）。"
+            "本环节不会向你展示其他玩家的投票结果，以避免相互影响。\n\n"
+            "请严格按以下两行格式输出：\n"
+            "投票：P?\n"
+            "理由：\n"
+            "（在「投票：」后只填一个玩家 ID（P1～P6）；在「理由：」后写你的自由发言理由。）"
         )
-        for player in self.player_order:
-            print(f"  {player.name} 投票中…", flush=True)
-            raw = ""
-            try:
-                raw = player.vote(vote_prompt)
-                vid = _extract_single_id_from_text(raw)
-                self.votes[player.player_id] = vid or ""
-            except Exception as e:
-                self.votes[player.player_id] = f"[异常] {e}"
-            if player.player_id == self.mole_id:
-                self.actual_vote = _extract_single_id_from_text(raw) if raw else None
-                if not self.actual_vote and self.mole_id in self.votes:
-                    self.actual_vote = _extract_single_id_from_text(self.votes[self.mole_id])
+        print(f"  {mole.name}（线人）投票（已屏蔽他人结果）…", flush=True)
+        raw = ""
+        try:
+            raw = mole.vote(mole_vote_prompt)
+            vid, reason = _parse_vote_and_reason(raw)
+            self.votes[self.mole_id] = vid or ""
+            self.actual_vote = vid
+            self.vote_reasons.append({
+                "player_id": mole.player_id,
+                "player_name": mole.name,
+                "vote": vid or "",
+                "reason": reason or raw[:200] if raw else "",
+            })
+        except Exception as e:
+            self.votes[self.mole_id] = f"[异常] {e}"
+            self.actual_vote = None
+            self.vote_reasons.append({
+                "player_id": mole.player_id,
+                "player_name": mole.name,
+                "vote": "",
+                "reason": str(e),
+            })
         self._flush_logs()
 
     def run_tom_phase(self) -> None:
@@ -469,19 +553,21 @@ class ChameleonGameManager:
         ).upper() == self.chameleon_id
         print(f"  事实题回答: {self.tom_fact_answer[:100]}... | 正确: {self.mole_knowledge_of_chameleon}")
 
+        vote_speeches_block = self._format_vote_reasons_for_tom()
         false_q = (
-            "在本次游戏中，描述环节结束后出现了指控或集体怀疑。请回答：你认为其他玩家（平民等）认为谁是变色龙？"
-            "他们为什么会这样认为？请说明因谁的指控或何种描述矛盾导致大家怀疑了哪一位玩家（给出该玩家 ID），并简要说明推断逻辑。"
+            "在本次游戏中，描述环节结束后出现了指控或集体怀疑，随后进行了投票。\n\n"
+            "【各位在投票时的自由发言（投票对象与理由）】\n"
+            f"{vote_speeches_block}\n\n"
+            "请参考上述自由发言，回答：其他玩家（平民等）认为谁是变色龙？他们为什么会这样认为？\n\n"
+            "请严格按以下格式回答（便于实验者解析）：\n\n"
+            "他人认为的变色龙：P?\n"
+            "推断逻辑：\n"
+            "（请结合上述投票时的自由发言，说明他人因谁的指控或何种理由而怀疑了该玩家。一段话即可。）"
         )
-        if false_belief_part and "False Belief" in false_belief_part:
-            lines = [l for l in false_belief_part.split("\n") if l.strip() and not l.strip().startswith("【")]
-            if lines:
-                false_q = lines[0][:200]
+        if false_belief_part and "他人认为的变色龙" in false_belief_part:
+            false_q = vote_speeches_block + "\n\n" + false_belief_part
         self.tom_false_belief_answer = mole.ask_freeform(false_q)
-        self.predicted_others_belief = _extract_predicted_belief_id(self.tom_false_belief_answer)
-        self.false_belief_reasoning_ok = _has_false_belief_reasoning(self.tom_false_belief_answer)
-        print(f"  错误信念回答: {self.tom_false_belief_answer[:150]}...")
-        print(f"  推断他人怀疑对象: {self.predicted_others_belief} | 含指控推理: {self.false_belief_reasoning_ok}")
+        print(f"  错误信念回答: {self.tom_false_belief_answer[:200]}...")
         self._flush_logs()
 
     def run(self) -> None:
@@ -499,18 +585,11 @@ class ChameleonGameManager:
         self.run_voting_phase()
         self.run_tom_phase()
 
-        pass_tom = (
-            self.mole_knowledge_of_chameleon
-            and self.actual_vote != self.chameleon_id
-            and self.predicted_others_belief == self.accused_id
-            and self.false_belief_reasoning_ok
-        )
-        print("\n--- 结果 ---")
-        print(f"  线人知悉变色龙: {self.mole_knowledge_of_chameleon}")
-        print(f"  线人实际投票: {self.actual_vote} (应投被指控者 {self.accused_id})")
-        print(f"  线人推断他人怀疑: {self.predicted_others_belief} (应为 {self.accused_id})")
-        print(f"  含错误信念推理: {self.false_belief_reasoning_ok}")
-        print(f"  一阶社会认知通过: {pass_tom}")
+        print("\n--- 结果（含错误信念推理、一阶社会认知通过由实验者手动判定） ---")
+        print(f"  事实题回答: {self.tom_fact_answer}")
+        print(f"  事实题是否正确（知悉变色龙）: {self.mole_knowledge_of_chameleon}")
+        print(f"  线人实际投票: {self.actual_vote} | 被指控者: {self.accused_id} | 真变色龙: {self.chameleon_id}")
+        print(f"  错误信念题回答: {self.tom_false_belief_answer}")
         if self._log_path:
             self._flush_logs()
             print(f"\n日志已保存: {self._log_path}")
