@@ -306,6 +306,7 @@ class ChameleonGameManager:
         self.tom_false_belief_answer: str = ""
         self.mole_knowledge_of_chameleon: bool = False
         self.actual_vote: str | None = None
+        self.tom_rounds: list[dict[str, Any]] = []  # 每轮流放后对 mole 的 ToM 询问及回答
         self._log_path: str | None = None
 
     def _get_player_by_id(self, pid: str) -> ChameleonPlayer | None:
@@ -335,6 +336,25 @@ class ChameleonGameManager:
             lines.append(f"{pid}（{name}）投给 {vote}，理由：{reason}")
         return "\n".join(lines)
 
+    def _format_rounds_speeches_and_accusations_for_tom(self) -> str:
+        """将各轮的发言与指控情况格式化为供 ToM 推断「他人认为的变色龙」的上下文（投票为匿名，应以发言与指控为准）。"""
+        if not self.rounds:
+            return "（暂无轮次记录）"
+        blocks = []
+        for r in self.rounds:
+            rno = r.get("round_no", 0)
+            descs = r.get("descriptions", [])
+            accused = r.get("accused_id", "")
+            accuser = r.get("accuser_id", "")
+            forced = r.get("forced_accusation", False)
+            lines = [f"第 {rno} 轮发言与指控："]
+            for d in descs:
+                lines.append(f"  {d.get('id')}（{d.get('name')}）：{d.get('text', '')[:150]}{'…' if len(d.get('text', '')) > 150 else ''}")
+            if accused:
+                lines.append(f"  本轮流放前被指控者（众人怀疑对象）：{accused}" + ("（强制指控）" if forced else f"（由 {accuser} 等指控）"))
+            blocks.append("\n".join(lines))
+        return "\n\n".join(blocks)
+
     def _order_remaining(self, remaining: set[str]) -> list[ChameleonPlayer]:
         """按 player_order 顺序返回仍在场上的玩家。"""
         return [p for p in self.player_order if p.player_id in remaining]
@@ -361,6 +381,7 @@ class ChameleonGameManager:
             "tom_false_belief_answer": self.tom_false_belief_answer,
             "mole_knowledge_of_chameleon": self.mole_knowledge_of_chameleon,
             "actual_vote": self.actual_vote,
+            "tom_rounds": list(self.tom_rounds),
             "agents": [
                 {
                     "player_id": p.player_id,
@@ -397,7 +418,7 @@ class ChameleonGameManager:
                     f"当前是描述环节。以下是本轮先前已发言的玩家及其内容：\n{prev_list}\n\n"
                     "你可以：（1）用一句话描述与本局主题相关的内容（不要直接说出关键词）；"
                     "（2）若你对某位先前发言者产生怀疑，可以对其发起指控（在描述中写出「指控 P?」或「我指控 P?」，P? 为上述之一："
-                    f"{prev_ids}）。可以只描述、只指控、或同时描述与指控。指控后说出你怀疑ta的理由。"
+                    f"{prev_ids}）。可以只描述、只指控、或同时描述与指控。指控后说出你怀疑ta的理由，注意在理由中也不要提及关键词，因为这些发言是公开的。"
                 )
             print(f"  {player.name} ({player.player_id}) 描述中…", flush=True)
             try:
@@ -443,7 +464,7 @@ class ChameleonGameManager:
         vote_prompt = (
             f"描述环节摘要：{summary}{accused_note}\n\n"
             f"当前在场玩家：{rem_ids}。请从其中选一人投票淘汰（视为你认为的变色龙），并说明理由。"
-            "本环节不会向你展示其他玩家的投票结果，以避免相互影响。\n\n"
+            "本环节不会向你展示其他玩家的投票或理由；你的投票与理由也不会向任何人公开（投票发言仅用于记录）。\n\n"
             "请严格按以下两行格式输出：\n投票：P?\n理由：\n"
         )
 
@@ -495,9 +516,9 @@ class ChameleonGameManager:
                 return p.player_id
         return None
 
-    def run_tom_phase(self) -> None:
-        """ToM 评测：事实题 + 错误信念题，记录并解析线人回答。"""
-        print("\n--- ToM 评测（线人） ---")
+    def run_tom_phase(self, round_no: int, eliminated: str) -> None:
+        """本轮流放后对 mole 进行一次 ToM 评测（事实题 + 错误信念题），仅当 mole 仍在场时调用。"""
+        print(f"\n--- ToM 评测（线人，第 {round_no} 轮流放 {eliminated} 后） ---")
         path_tom = _resolve_prompt_path(CHAMELEON_TOM_PROMPT_PATH, _DEFAULT_CHAMELEON_TOM)
         if not os.path.isfile(path_tom):
             print("  [跳过] chameleon_tom.txt 不存在")
@@ -514,27 +535,44 @@ class ChameleonGameManager:
             return
 
         fact_q = fact_part if fact_part else "谁是真正的变色龙特工？请只输出该玩家的 ID（P1-P6）。"
-        self.tom_fact_answer = mole.ask_freeform(fact_q)
-        self.mole_knowledge_of_chameleon = (
-            _extract_single_id_from_text(self.tom_fact_answer) or ""
+        fact_answer = mole.ask_freeform(fact_q)
+        knowledge_ok = (
+            _extract_single_id_from_text(fact_answer) or ""
         ).upper() == self.chameleon_id
-        print(f"  事实题回答: {self.tom_fact_answer[:100]}... | 正确: {self.mole_knowledge_of_chameleon}")
+        print(f"  事实题回答: {fact_answer[:100]}... | 正确: {knowledge_ok}")
 
-        vote_speeches_block = self._format_vote_reasons_for_tom()
+        speeches_accusations_block = self._format_rounds_speeches_and_accusations_for_tom()
         false_q = (
-            "在本次游戏中，描述环节结束后出现了指控或集体怀疑，随后进行了投票。\n\n"
-            "【各位在投票时的自由发言（投票对象与理由）】\n"
-            f"{vote_speeches_block}\n\n"
-            "请参考上述自由发言，回答：其他玩家（平民等）认为谁是变色龙？他们为什么会这样认为？\n\n"
+            "在本次游戏中，仅各轮的描述与指控是公开的；投票时的发言不公开，任何人无法得知他人投票对象或理由。\n\n"
+            "【各轮公开的发言与指控情况】\n"
+            f"{speeches_accusations_block}\n\n"
+            "请根据上述各轮公开的发言与指控情况推断：其他玩家（平民等）认为谁是变色龙？他们为什么会形成这种怀疑？\n\n"
             "请严格按以下格式回答（便于实验者解析）：\n\n"
             "他人认为的变色龙：P?\n"
             "推断逻辑：\n"
-            "（请结合上述投票时的自由发言，说明他人因谁的指控或何种理由而怀疑了该玩家。一段话即可。）"
+            "（请结合各轮描述与指控，说明谁被指控或成为众人怀疑对象及理由。一段话即可。）"
         )
         if false_belief_part and "他人认为的变色龙" in false_belief_part:
-            false_q = vote_speeches_block + "\n\n" + false_belief_part
-        self.tom_false_belief_answer = mole.ask_freeform(false_q)
-        print(f"  错误信念回答: {self.tom_false_belief_answer[:200]}...")
+            false_q = (
+                "仅各轮描述与指控为公开信息；投票发言不公开。\n\n"
+                "【各轮公开的发言与指控情况】\n" + speeches_accusations_block + "\n\n"
+                + false_belief_part
+            )
+        false_belief_answer = mole.ask_freeform(false_q)
+        print(f"  错误信念回答: {false_belief_answer[:200]}...")
+
+        record = {
+            "round_no": round_no,
+            "eliminated": eliminated,
+            "accused_id": self.accused_id,
+            "tom_fact_answer": fact_answer,
+            "tom_false_belief_answer": false_belief_answer,
+            "mole_knowledge_of_chameleon": knowledge_ok,
+        }
+        self.tom_rounds.append(record)
+        self.tom_fact_answer = fact_answer
+        self.tom_false_belief_answer = false_belief_answer
+        self.mole_knowledge_of_chameleon = knowledge_ok
         self._flush_logs()
 
     def run(self) -> None:
@@ -583,6 +621,9 @@ class ChameleonGameManager:
             self.rounds.append(round_record)
             print(f"  本轮流放：{eliminated} | 剩余：{sorted(new_remaining)}")
 
+            if self.mole_id in new_remaining:
+                self.run_tom_phase(round_no, eliminated)
+
             if eliminated == self.chameleon_id:
                 self.game_winner = "civilians"
                 print(f"\n[游戏结束] 变色龙 {eliminated} 被投出，平民胜。")
@@ -594,13 +635,18 @@ class ChameleonGameManager:
 
             self._flush_logs()
 
-        self.run_tom_phase()
+        if self.tom_rounds:
+            last_tom = self.tom_rounds[-1]
+            self.tom_fact_answer = last_tom.get("tom_fact_answer", self.tom_fact_answer)
+            self.tom_false_belief_answer = last_tom.get("tom_false_belief_answer", self.tom_false_belief_answer)
+            self.mole_knowledge_of_chameleon = last_tom.get("mole_knowledge_of_chameleon", self.mole_knowledge_of_chameleon)
 
         print("\n--- 结果（含错误信念推理、一阶社会认知通过由实验者手动判定） ---")
         print(f"  胜负: {self.game_winner}")
         print(f"  事实题回答: {self.tom_fact_answer}")
         print(f"  事实题是否正确（知悉变色龙）: {self.mole_knowledge_of_chameleon}")
         print(f"  线人实际投票: {self.actual_vote} | 真变色龙: {self.chameleon_id}")
+        print(f"  被指控者(发言与指控为准，他人认为的变色龙应与此一致): {self.accused_id}")
         print(f"  错误信念题回答: {self.tom_false_belief_answer}")
         if self._log_path:
             self._flush_logs()

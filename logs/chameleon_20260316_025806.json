@@ -1,15 +1,15 @@
 {
-  "model": "Qwen3-235B-A22B-Thinking-2507",
+  "model": "Kimi-K2.5",
   "config_ref": "config/chameleon_config.json",
-  "keyword": "丁香花",
+  "keyword": "冰淇淋",
   "chameleon_id": "P5",
   "mole_id": "P6",
   "remaining_player_ids": [
-    "P2",
+    "P6",
     "P1",
     "P4",
+    "P2",
     "P3",
-    "P6",
     "P5"
   ],
   "rounds": [],
@@ -24,6 +24,7 @@
   "tom_false_belief_answer": "",
   "mole_knowledge_of_chameleon": false,
   "actual_vote": null,
+  "tom_rounds": [],
   "agents": [
     {
       "player_id": "P1",
