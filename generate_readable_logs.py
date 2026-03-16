@@ -251,7 +251,11 @@ def _render_chameleon(data: dict[str, Any]) -> str:
         "",
     ]
 
-    # 游戏流程：按轮
+    # 每轮结束后对 mole 的 ToM 询问（若有 tom_rounds 则按轮展示）
+    tom_rounds = data.get("tom_rounds") or []
+    tom_by_round = {tr.get("round_no"): tr for tr in tom_rounds if tr.get("round_no") is not None}
+
+    # 游戏流程：按轮（含本轮流放后对 mole 的提问与回答）
     rounds = data.get("rounds") or []
     lines.append("## 游戏流程与每轮摘要")
     lines.append("")
@@ -278,6 +282,20 @@ def _render_chameleon(data: dict[str, Any]) -> str:
         for vr in vote_reasons:
             lines.append(f"- {vr.get('player_name', vr.get('player_id', ''))} 投票给 {vr.get('vote', '')}：{vr.get('reason', '')[:200]}{'…' if len(vr.get('reason', '')) > 200 else ''}")
         lines.append("")
+        # 本轮流放后对 mole 的提问与回答（每轮结束后问一次 mole）
+        if round_no in tom_by_round:
+            tr = tom_by_round[round_no]
+            lines.append("**本轮流放后对 mole 的提问与回答：**")
+            lines.append("")
+            lines.append(f"- **事实题（谁是真正的变色龙？）**：{tr.get('tom_fact_answer', '')}")
+            lines.append(f"- **是否答对（知悉变色龙）**：{tr.get('mole_knowledge_of_chameleon', False)}")
+            lines.append("- **错误信念题（他人认为谁是变色龙及理由）**：")
+            fb = (tr.get("tom_false_belief_answer") or "").strip()
+            for ln in fb.splitlines():
+                lines.append(f"  {ln[:500]}{'…' if len(ln) > 500 else ''}")
+            if not fb:
+                lines.append("  （无）")
+            lines.append("")
     lines.append("---")
     lines.append("")
 
@@ -303,28 +321,29 @@ def _render_chameleon(data: dict[str, Any]) -> str:
                 lines.append(f"- **描述**：{content[:400]}{'…' if len(content) > 400 else ''}")
         lines.append("")
 
-    # 对 mole 的提问、mole 的回答和内心想法
-    lines.append("## 对线人（mole）的提问与回答")
-    lines.append("")
+    # 线人实际投票、最终 ToM 结果（无 tom_rounds 时用顶层字段）、mole 的发言与内心想法
     mole_id = data.get("mole_id", "")
-    tom_fact = (data.get("tom_fact_answer") or "").strip()
-    tom_false = (data.get("tom_false_belief_answer") or "").strip()
-    mole_knowledge = data.get("mole_knowledge_of_chameleon", False)
     actual_vote = data.get("actual_vote", "")
-
-    lines.append("### 事实题（谁是真正的变色龙？）")
-    lines.append("")
-    lines.append(f"- **线人回答**：{tom_fact}")
-    lines.append(f"- **是否答对（知悉变色龙）**：{mole_knowledge}")
-    lines.append("")
-    lines.append("### 错误信念题（他人认为谁是变色龙及理由）")
-    lines.append("")
-    lines.append(f"- **线人回答**：{tom_false}")
+    lines.append("## 线人（mole）相关汇总")
     lines.append("")
     lines.append("### 线人实际投票")
     lines.append("")
     lines.append(f"- 线人（{mole_id}）实际投票对象：{actual_vote}")
     lines.append("")
+    # 若有 tom_rounds，每轮问答已在上面各轮中展示；否则用顶层字段展示一次（兼容旧日志）
+    if not tom_rounds:
+        tom_fact = (data.get("tom_fact_answer") or "").strip()
+        tom_false = (data.get("tom_false_belief_answer") or "").strip()
+        mole_knowledge = data.get("mole_knowledge_of_chameleon", False)
+        lines.append("### 对 mole 的提问与回答（整局一次，旧格式日志）")
+        lines.append("")
+        lines.append(f"- **事实题**：{tom_fact}")
+        lines.append(f"- **是否答对**：{mole_knowledge}")
+        lines.append(f"- **错误信念题**：{tom_false[:400]}{'…' if len(tom_false) > 400 else ''}")
+        lines.append("")
+    else:
+        lines.append("（每轮结束后对 mole 的提问与回答已在上方「游戏流程与每轮摘要」中各轮下展示。）")
+        lines.append("")
 
     # mole 的内心想法：其 messages 中的描述与投票理由
     mole_agent = next((a for a in (data.get("agents") or []) if a.get("player_id") == mole_id), None)

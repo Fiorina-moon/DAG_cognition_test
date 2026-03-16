@@ -3,7 +3,11 @@
 - 4 个模型：从 .env 的 PARATERA_MODEL_LIST 读取（逗号分隔，取前 4 个）。
 - 3 个游戏：猜数字、拍卖、谁是卧底（与 guess_number_game / auction_game / chameleon_game 一致）。
 每次以子进程运行对应游戏，通过环境变量 PARATERA_MODEL 指定模型（与 paratera_common.get_model_for_game 一致，不修改游戏代码）。
-用法：python run_all_models_games.py [--jobs N]
+用法：
+  python run_all_models_games.py              # 4 模型 × 3 游戏，共 12 次
+  python run_all_models_games.py --game 猜数字  # 仅运行「猜数字」（4 个模型各 1 次）
+  python run_all_models_games.py --game auction # 仅运行「拍卖」
+  python run_all_models_games.py --game chameleon -j 4
 """
 
 import os
@@ -65,7 +69,6 @@ def run_one(model: str, game_key: str, script_name: str, game_label: str) -> tup
             env=env,
             capture_output=True,
             text=True,
-            timeout=3600,
             encoding="utf-8",
             errors="replace",
         )
@@ -76,34 +79,50 @@ def run_one(model: str, game_key: str, script_name: str, game_label: str) -> tup
         if not ok and msg.strip():
             msg = msg.strip()[-1500:]
         return (model, game_key, game_label, ok, msg)
-    except subprocess.TimeoutExpired:
-        return (model, game_key, game_label, False, "运行超时（3600s）")
     except Exception as e:
         return (model, game_key, game_label, False, str(e))
 
 
 def main() -> None:
     import argparse
-    parser = argparse.ArgumentParser(description="并行运行 4 模型 × 3 游戏，共 12 次（模型来自 .env PARATERA_MODEL_LIST）")
+    parser = argparse.ArgumentParser(description="并行运行 4 模型 × 3 游戏（模型来自 .env PARATERA_MODEL_LIST）")
     parser.add_argument(
         "--jobs", "-j",
         type=int,
         default=12,
         help="并行任务数，默认 12；若 API 限流可改为 4 等",
     )
+    parser.add_argument(
+        "--game", "-g",
+        choices=["guess_number", "auction", "chameleon", "猜数字", "拍卖", "谁是卧底"],
+        default=None,
+        metavar="GAME",
+        help="仅运行指定游戏：guess_number/猜数字、auction/拍卖、chameleon/谁是卧底；不指定则运行全部 3 个",
+    )
     args = parser.parse_args()
 
     models = _get_models()
-    if len(models) < 4:
-        print(f"警告：PARATERA_MODEL_LIST 仅解析出 {len(models)} 个模型，将运行 {len(models)}×3 = {len(models)*3} 次")
+    games_to_run = list(GAMES)
+    if args.game is not None:
+        game_arg = args.game.strip()
+        key_map = {"猜数字": "guess_number", "拍卖": "auction", "谁是卧底": "chameleon"}
+        want_key = key_map.get(game_arg, game_arg)
+        games_to_run = [g for g in GAMES if g[0] == want_key]
+        if not games_to_run:
+            print(f"错误：未识别的游戏 «{args.game}»，可选：guess_number、auction、chameleon 或 猜数字、拍卖、谁是卧底")
+            sys.exit(1)
 
     tasks = []
     for model in models:
-        for game_key, script_name, game_label in GAMES:
+        for game_key, script_name, game_label in games_to_run:
             tasks.append((model, game_key, script_name, game_label))
 
+    if len(models) < 4 and not args.game:
+        print(f"警告：PARATERA_MODEL_LIST 仅解析出 {len(models)} 个模型")
+
+    game_names = "、".join(g[2] for g in games_to_run)
     print(f"模型（.env PARATERA_MODEL_LIST 前 4 个）：{models}")
-    print(f"游戏：猜数字、拍卖、谁是卧底")
+    print(f"游戏：{game_names}（共 {len(games_to_run)} 个）")
     print(f"共 {len(tasks)} 个任务，并行数 {args.jobs}")
     print("提示：Ctrl+C 可中断并停止所有任务")
     print("=" * 60)
